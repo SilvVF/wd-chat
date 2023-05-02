@@ -1,0 +1,16 @@
+plugins {
+    id 'java-library'
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+}
+
+dependencies {
+    implementation platform("org.http4k:http4k-bom:4.42.1.0")
+    implementation "org.http4k:http4k-core"
+    implementation "org.http4k:http4k-server-undertow"
+    implementation "org.http4k:http4k-client-apache"
+}
