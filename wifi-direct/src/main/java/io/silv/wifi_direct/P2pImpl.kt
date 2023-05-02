@@ -52,7 +52,7 @@ internal class P2pImpl(
     }.flowOn(Dispatchers.IO)
 
     override fun setResultForMAC(
-        macAddr: MacAddress,
+        mac: MacAddress,
         shouldAccept: () -> Boolean
     ): Flow<Either<Boolean, P2pError>> {
         TODO("Not yet implemented")
