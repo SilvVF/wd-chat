@@ -3,10 +3,8 @@ package io.silv.feature_search_users.use_case
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pInfo
 import arrow.core.Either
-import io.silv.wifi_direct.P2p
-import io.silv.wifi_direct.P2pError
 import io.silv.wifi_direct.WifiP2pEvent
-import io.silv.wifi_direct.WifiP2pReceiver
+import io.silv.wifi_direct.types.P2pError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 
