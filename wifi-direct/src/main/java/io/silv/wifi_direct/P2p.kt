@@ -14,7 +14,7 @@ interface P2p {
 
     fun getNearbyDevices(): Flow<Either<List<WifiP2pDevice>, P2pError>>
 
-    fun setResultForMAC(macAddr: MacAddress, shouldAccept: () -> Boolean): Flow<Either<Boolean, P2pError>>
+    fun setResultForMAC(mac: MacAddress, shouldAccept: () -> Boolean): Flow<Either<Boolean, P2pError>>
 
     suspend fun connect(device: WifiP2pDevice,  config: WifiP2pConfig.Builder.() -> Unit = {}): Flow<Either<WifiP2pInfo, P2pError>>
 
