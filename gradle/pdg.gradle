@@ -3,7 +3,7 @@
 
 task pdg {
     doLast {
-        def dot = new File(rootProject.buildDir, 'reports/dependency-graph/project.dot')
+        def dot = new File(rootProject.rootDir, '/dependency-graph/project.dot')
         dot.parentFile.mkdirs()
         dot.delete()
 
