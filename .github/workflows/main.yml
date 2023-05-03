@@ -17,7 +17,7 @@ jobs:
           uses: ts-graphviz/setup-graphviz@v1
 
         - name: Generate Dependency Graph
-          run: gradle pdg
+          run: ./gradlew pdg
 
         - name: Commmit
           run: |
