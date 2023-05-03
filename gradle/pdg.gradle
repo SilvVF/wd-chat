@@ -1,7 +1,7 @@
 // From https://github.com/JakeWharton/SdkSearch/blob/master/gradle/projectDependencyGraph.gradle
 // The only difference here is the output directory.
 
-task projectDependencyGraph {
+task pdg {
     doLast {
         def dot = new File(rootProject.buildDir, 'reports/dependency-graph/project.dot')
         dot.parentFile.mkdirs()
