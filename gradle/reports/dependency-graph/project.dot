@@ -1,0 +1,31 @@
+digraph {
+  graph [label="WifiDirectChat\n ",labelloc=t,fontsize=30,ranksep=1.4];
+  node [style=filled, fillcolor="#bbbbbb"];
+  rankdir=TB;
+
+  # Projects
+
+  ":app" [fillcolor="#baffc9"];
+  ":feature-search-users" [fillcolor="#baffc9"];
+  ":local-database" [fillcolor="#baffc9"];
+  ":on-boarding" [fillcolor="#baffc9"];
+  ":shared-ui-compose" [fillcolor="#baffc9"];
+  ":wifi-direct" [fillcolor="#baffc9"];
+
+  {rank = same;}
+
+  # Dependencies
+
+  ":app" -> ":app"
+  ":app" -> ":on-boarding" [style=dotted]
+  ":app" -> ":shared-ui-compose" [style=dotted]
+  ":app" -> ":feature-search-users" [style=dotted]
+  ":shared-ui-compose" -> ":shared-ui-compose"
+  ":feature-search-users" -> ":shared-ui-compose"
+  ":feature-search-users" -> ":wifi-direct"
+  ":feature-search-users" -> ":feature-search-users"
+  ":on-boarding" -> ":shared-ui-compose"
+  ":on-boarding" -> ":on-boarding"
+  ":wifi-direct" -> ":wifi-direct"
+  ":local-database" -> ":local-database"
+}
