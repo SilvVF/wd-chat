@@ -57,5 +57,5 @@ dependencies {
     implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
 
     implementation "com.google.accompanist:accompanist-permissions:0.31.1-alpha"
-    api api(project(':shared-ui-compose',))
+    api(project(':shared-ui-compose'))
 }
