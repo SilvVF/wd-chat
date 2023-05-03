@@ -1,3 +1,3 @@
 # wd-chat
 
-![](gradle/reports/dependency-graph/project.dot.png)
+![](gradle/reports/dependency-graph/project.dot)
