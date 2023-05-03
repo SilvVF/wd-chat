@@ -3,7 +3,7 @@
 
 task projectDependencyGraph {
     doLast {
-        def dot = new File(rootProject.rootDir, 'gradle/dependency-graph/project.dot')
+        def dot = new File(rootProject.buildDir, 'reports/dependency-graph/project.dot')
         dot.parentFile.mkdirs()
         dot.delete()
 
@@ -108,11 +108,11 @@ task projectDependencyGraph {
 
         dot << '}\n'
 
-        def p = 'dot -Tpng -O project.dot'.execute([], dot.parentFile)
-        p.waitFor()
-        if (p.exitValue() != 0) {
-            throw new RuntimeException(p.errorStream.text)
-        }
+//        def p = 'dot -Tpng -O project.dot'.execute([], dot.parentFile)
+//        p.waitFor()
+//        if (p.exitValue() != 0) {
+//            throw new RuntimeException(p.errorStream.text)
+//        }
 
         println("Project module dependency graph created at ${dot.absolutePath}.png")
     }

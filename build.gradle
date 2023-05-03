@@ -18,4 +18,4 @@ plugins {
     id 'com.google.dagger.hilt.android' version '2.46' apply false
 }
 
-apply from: file(rootDir.path + "/gradle/projectDependencyGraph.gradle")
+apply from: file("gradle/pdg.gradle")
