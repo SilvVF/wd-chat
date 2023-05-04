@@ -11,7 +11,7 @@ import javax.inject.Inject
 @HiltViewModel
 class OnboardViewModel @Inject constructor(): EventViewModel<OnboardEvent>() {
 
-    private val lastStep = 1
+    private val lastStep = 2
 
     private val _currentStep = MutableStateFlow(1)
     val currentStep = _currentStep.asStateFlow()

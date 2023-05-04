@@ -1,17 +1,38 @@
 package io.silv.server
 
-import org.http4k.core.Request
-import org.http4k.core.Response
-import org.http4k.core.Status.Companion.OK
-import org.http4k.server.Undertow
-import org.http4k.server.asServer
+import org.http4k.lens.Path
+import org.http4k.routing.bind
+import org.http4k.routing.websockets
+import org.http4k.websocket.Websocket
+import org.http4k.websocket.WsMessage
+import java.net.InetAddress
 
-fun createApp() = { request: Request ->
-    handleRequest(request)
+val chatPath = Path.of("chat")
+
+
+class ChatWebSocketHandler(
+    private val groupOwner: Boolean,
+    private val groupOwnerAddress: InetAddress,
+) {
+
+    fun onMessage(msg: WsMessage) {
+
+    }
 }
-    .asServer(Undertow(9000))
-    .start()
+
+fun webSockets(
+     chatHandler: ChatWebSocketHandler
+) = websockets {
+    "/{chat}" bind { ws: Websocket ->
+        val chat = chatPath(ws.upgradeRequest)
+        ws.send(WsMessage("Connected"))
+
+        ws.onMessage {
+            chatHandler.onMessage(it)
+        }
+    }
+}
 
 
-private fun handleRequest(request: Request): Response = Response(OK).body("Hello")
+
 

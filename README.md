@@ -2,5 +2,3 @@
 
 ![](dependency-graph/project.dot.png)
 
-
-..d

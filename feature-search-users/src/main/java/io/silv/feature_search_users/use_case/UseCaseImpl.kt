@@ -22,7 +22,7 @@ internal fun searchUsersUseCaseImpl(
 ): Flow<Either<List<WifiP2pDevice>, P2pError>> = p2p.getNearbyDevices()
 
 
-internal suspend fun connectToDeviceUseCaseImpl(
+internal fun connectToDeviceUseCaseImpl(
     p2p: P2p,
     wifiP2pDevice: WifiP2pDevice,
     config: WifiP2pConfig.Builder.() -> Unit

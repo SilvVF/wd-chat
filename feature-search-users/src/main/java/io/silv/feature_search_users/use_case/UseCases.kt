@@ -1,5 +1,6 @@
 package io.silv.feature_search_users.use_case
 
+import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pInfo
 import arrow.core.Either
@@ -14,4 +15,7 @@ fun interface SearchUsersUseCase: () -> Flow<Either<List<WifiP2pDevice>, P2pErro
 
 fun interface ObserveWifiDirectEventsUseCase: () -> SharedFlow<WifiP2pEvent>
 
-fun interface ConnectToDeviceUseCase: () -> Flow<Either<WifiP2pInfo, P2pError>>
+fun interface ConnectToDeviceUseCase: (
+    WifiP2pDevice,
+    WifiP2pConfig.Builder.() -> Unit
+) -> Flow<Either<WifiP2pInfo, P2pError>>
