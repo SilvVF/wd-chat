@@ -20,8 +20,8 @@ digraph {
 
   ":app" -> ":app"
   ":app" -> ":on-boarding" [style=dotted]
-  ":app" -> ":shared-ui-compose" [style=dotted]
   ":app" -> ":feature-search-users" [style=dotted]
+  ":app" -> ":feature-create-group" [style=dotted]
   ":shared-ui-compose" -> ":shared-ui-compose"
   ":feature-create-group" -> ":shared-ui-compose"
   ":feature-create-group" -> ":wifi-direct"
