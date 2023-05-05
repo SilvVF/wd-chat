@@ -13,6 +13,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/datastore" />
+            <option value="$PROJECT_DIR$/feature-create-group" />
             <option value="$PROJECT_DIR$/feature-search-users" />
             <option value="$PROJECT_DIR$/local-database" />
             <option value="$PROJECT_DIR$/on-boarding" />

@@ -2,7 +2,7 @@ package io.silv.feature_search_users.use_case
 
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
-import android.net.wifi.p2p.WifiP2pInfo
+import android.net.wifi.p2p.WifiP2pGroup
 import arrow.core.Either
 import io.silv.wifi_direct.P2p
 import io.silv.wifi_direct.WifiP2pEvent
@@ -17,16 +17,21 @@ internal fun observeWifiDirectEventsUseCaseImpl(
     return wifiP2pReceiver.eventBroadcast
 }
 
-internal fun searchUsersUseCaseImpl(
+internal fun startDiscoveryUseCaseImpl(
     p2p: P2p
-): Flow<Either<List<WifiP2pDevice>, P2pError>> = p2p.getNearbyDevices()
+): Flow<Either<P2pError, Boolean>> = p2p.startDiscovery()
+
+internal fun observePeersListUseCaseImpl(
+    p2p: P2p
+): Flow<List<WifiP2pDevice>> = p2p.peersFlow
+
+internal fun observeGroupInfoUseCaseImpl(
+    p2p: P2p
+): Flow<WifiP2pGroup> = p2p.groupInfoFlow
 
 
 internal fun connectToDeviceUseCaseImpl(
     p2p: P2p,
     wifiP2pDevice: WifiP2pDevice,
     config: WifiP2pConfig.Builder.() -> Unit
-): Flow<Either<WifiP2pInfo, P2pError>> = p2p.connect(
-    device = wifiP2pDevice,
-    config = config
-)
+): Flow<Either<P2pError, Boolean>> = p2p.connect(wifiP2pDevice, config)

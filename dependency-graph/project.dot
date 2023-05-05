@@ -7,6 +7,7 @@ digraph {
 
   ":app" [fillcolor="#baffc9"];
   ":datastore" [fillcolor="#baffc9"];
+  ":feature-create-group" [fillcolor="#baffc9"];
   ":feature-search-users" [fillcolor="#baffc9"];
   ":local-database" [fillcolor="#baffc9"];
   ":on-boarding" [fillcolor="#baffc9"];
@@ -22,6 +23,9 @@ digraph {
   ":app" -> ":shared-ui-compose" [style=dotted]
   ":app" -> ":feature-search-users" [style=dotted]
   ":shared-ui-compose" -> ":shared-ui-compose"
+  ":feature-create-group" -> ":shared-ui-compose"
+  ":feature-create-group" -> ":wifi-direct"
+  ":feature-create-group" -> ":feature-create-group"
   ":datastore" -> ":datastore"
   ":feature-search-users" -> ":shared-ui-compose"
   ":feature-search-users" -> ":wifi-direct"

@@ -9,21 +9,21 @@ import kotlinx.coroutines.flow.callbackFlow
 
 interface P2pCallbacks {
 
-    val peersListFlow get() = callbackFlow<List<WifiP2pDevice>> {
+    val peerListListenerCallbackFlow get() = callbackFlow<List<WifiP2pDevice>> {
         WifiP2pManager.PeerListListener { devices ->
             trySend(devices.deviceList.toList())
         }
         awaitCancellation()
     }
 
-    val groupInfoFlow get() = callbackFlow<WifiP2pGroup> {
+    val groupInfoListenerCallbackFlow get() = callbackFlow<WifiP2pGroup> {
         WifiP2pManager.GroupInfoListener { groupInfo ->
             trySend(groupInfo)
         }
         awaitCancellation()
     }
 
-    val p2pStateFlow get() = callbackFlow<Boolean> {
+    val p2pStateListenerCallbackFlow get() = callbackFlow<Boolean> {
         WifiP2pManager.P2pStateListener {
             trySend(
                 when (it) {

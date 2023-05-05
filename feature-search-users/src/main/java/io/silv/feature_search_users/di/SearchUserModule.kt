@@ -10,11 +10,15 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ViewModelScoped
 import io.silv.feature_search_users.SearchUsersViewModel
 import io.silv.feature_search_users.use_case.ConnectToDeviceUseCase
+import io.silv.feature_search_users.use_case.ObserveGroupInfoUseCase
+import io.silv.feature_search_users.use_case.ObservePeersListUseCase
 import io.silv.feature_search_users.use_case.ObserveWifiDirectEventsUseCase
-import io.silv.feature_search_users.use_case.SearchUsersUseCase
+import io.silv.feature_search_users.use_case.StartDiscoveryUseCase
 import io.silv.feature_search_users.use_case.connectToDeviceUseCaseImpl
+import io.silv.feature_search_users.use_case.observeGroupInfoUseCaseImpl
+import io.silv.feature_search_users.use_case.observePeersListUseCaseImpl
 import io.silv.feature_search_users.use_case.observeWifiDirectEventsUseCaseImpl
-import io.silv.feature_search_users.use_case.searchUsersUseCaseImpl
+import io.silv.feature_search_users.use_case.startDiscoveryUseCaseImpl
 import io.silv.wifi_direct.P2p
 import io.silv.wifi_direct.WifiP2pReceiver
 
@@ -25,13 +29,17 @@ object SearchUserModule {
 
     @Provides
     fun provideSearchUsersViewModel(
-        searchUsersUseCase: SearchUsersUseCase,
-        observeWifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase,
-        connectToDeviceUseCase: ConnectToDeviceUseCase
+        wifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase,
+        connectToDeviceUseCase: ConnectToDeviceUseCase,
+        observePeersListUseCase: ObservePeersListUseCase,
+        observeGroupInfoUseCase: ObserveGroupInfoUseCase,
+        startDiscoveryUseCase: StartDiscoveryUseCase,
     ): SearchUsersViewModel = SearchUsersViewModel(
-        searchUsersUseCase = searchUsersUseCase,
-        wifiDirectEventsUseCase = observeWifiDirectEventsUseCase,
-        connectToDeviceUseCase = connectToDeviceUseCase
+        wifiDirectEventsUseCase = wifiDirectEventsUseCase,
+        connectToDeviceUseCase = connectToDeviceUseCase,
+        observePeersList = observePeersListUseCase,
+        observeGroupInfo = observeGroupInfoUseCase,
+        startDiscovery = startDiscoveryUseCase
     )
 
     @Provides
@@ -44,6 +52,22 @@ object SearchUserModule {
 
     @ViewModelScoped
     @Provides
+    fun provideObservePeersListUseCase(
+        p2p: P2p
+    ): ObservePeersListUseCase = ObservePeersListUseCase {
+        observePeersListUseCaseImpl(p2p)
+    }
+
+    @ViewModelScoped
+    @Provides
+    fun provideObserveGroupInfoUseCase(
+        p2p: P2p
+    ): ObserveGroupInfoUseCase = ObserveGroupInfoUseCase {
+        observeGroupInfoUseCaseImpl(p2p)
+    }
+
+    @ViewModelScoped
+    @Provides
     fun provideConnectToDeviceUseCase(
         p2p: P2p,
     ): ConnectToDeviceUseCase = ConnectToDeviceUseCase { wifiP2pDevice, wifiP2pConfig ->
@@ -52,10 +76,10 @@ object SearchUserModule {
 
     @ViewModelScoped
     @Provides
-    fun provideSearchUsersUseCase(
+    fun provideStartDiscoveryUseCase(
         p2p: P2p,
-    ): SearchUsersUseCase = SearchUsersUseCase {
-        searchUsersUseCaseImpl(p2p)
+    ): StartDiscoveryUseCase = StartDiscoveryUseCase {
+        startDiscoveryUseCaseImpl(p2p)
     }
 
 

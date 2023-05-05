@@ -7,11 +7,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ViewModelScoped
 import dagger.hilt.components.SingletonComponent
-import io.silv.feature_search_users.SearchUsersViewModel
-import io.silv.feature_search_users.use_case.ObserveWifiDirectEventsUseCase
-import io.silv.feature_search_users.use_case.SearchUsersUseCase
 import io.silv.on_boarding.OnboardViewModel
 import io.silv.wifi_direct.WifiP2pReceiver
 import javax.inject.Singleton
