@@ -7,9 +7,12 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,6 +21,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import io.silv.feature_chat.ChatScreen
+import io.silv.feature_create_group.CreateGroupScreen
 import io.silv.feature_search_users.SearchUsersScreen
 import io.silv.shared_ui.theme.WifiDirectChatTheme
 import io.silv.on_boarding.OnboardScreen
@@ -60,7 +65,7 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(
                     navController = navController,
-                    startDestination = "next"
+                    startDestination = "home"
                 ) {
                      composable("start") {
                          Surface(
@@ -75,8 +80,30 @@ class MainActivity : ComponentActivity() {
                              }
                          }
                      }
+                    composable("home") {
+                        Column(Modifier.fillMaxSize()) {
+                            Button(onClick = {
+                                navController.navigate("create-group")
+                            }) {
+                                Text("Create Group")
+                            }
+                            Button(onClick = {
+                                navController.navigate("next")
+                            }) {
+                                Text("Join Group")
+                            }
+                        }
+                    }
                     composable("next") {
                         SearchUsersScreen()
+                    }
+                    composable("create-group") {
+                        CreateGroupScreen {
+                            navController.navigate("chat")
+                        }
+                    }
+                    composable("chat") {
+                        ChatScreen()
                     }
                 }
             }

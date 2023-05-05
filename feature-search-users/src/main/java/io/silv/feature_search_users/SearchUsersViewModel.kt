@@ -60,7 +60,7 @@ class SearchUsersViewModel @Inject constructor(
                 connectToDeviceUseCase(device) {
                     setDeviceAddress(MacAddress.fromString(device.deviceAddress))
                     setPassphrase("password") // TODO(ask for password in setup)
-                    setNetworkName("Test-network1")
+                    setNetworkName("DIRECT-xy" + "TestNetwork")
                 }.first()
                     .fold(
                         ifLeft = { err : P2pError ->

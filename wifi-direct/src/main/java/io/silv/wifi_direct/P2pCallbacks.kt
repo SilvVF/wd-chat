@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.callbackFlow
  * @property groupInfoListenerCallbackFlow
  * @property p2pStateListenerCallbackFlow
  */
-interface P2pCallbacks {
+internal interface P2pCallbacks {
 
     /**
      * Wrapper around [WifiP2pManager.PeerListListener] using [callbackFlow].

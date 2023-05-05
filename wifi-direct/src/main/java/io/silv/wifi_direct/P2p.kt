@@ -22,9 +22,16 @@ interface P2p {
     val peersFlow: Flow<List<WifiP2pDevice>>
 
     val groupInfoFlow: Flow<WifiP2pGroup>
+
+    suspend fun requestGroupInfo(): Either<P2pError, WifiP2pGroup>
     fun startDiscovery(): Flow<Either<P2pError, Boolean>>
 
     fun connect(device: WifiP2pDevice,  config: WifiP2pConfig.Builder.() -> Unit = {}): Flow<Either<P2pError, Boolean>>
+
+    suspend fun createGroup(
+        passPhrase: String,
+        networkName: String
+    ):  Either<P2pError, Boolean>
 
     companion object {
         fun getImpl(ctx: Context, p2pManager: WifiP2pManager): P2p = P2pImpl(ctx, p2pManager)

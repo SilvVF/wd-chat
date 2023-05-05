@@ -8,8 +8,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.silv.datastore.EncryptedDatastore
 import io.silv.on_boarding.OnboardViewModel
 import io.silv.wifi_direct.WifiP2pReceiver
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Singleton
 
 @Module
@@ -18,7 +21,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideOnboardViewModel(): OnboardViewModel = OnboardViewModel()
+    fun provideOnboardViewModel(
+        encryptedDatastore: EncryptedDatastore
+    ): OnboardViewModel = OnboardViewModel(
+        datastore = encryptedDatastore
+    )
 
 
     @Provides
@@ -29,8 +36,11 @@ object AppModule {
         return getSystemService(context, WifiP2pManager::class.java) as WifiP2pManager
     }
 
+
     @Provides
     @Singleton
-    fun provideWifiP2pReceiver(): WifiP2pReceiver = WifiP2pReceiver()
+    fun provideWifiP2pReceiver(): WifiP2pReceiver = WifiP2pReceiver(
+        scope = CoroutineScope(Dispatchers.IO)
+    )
 
 }
