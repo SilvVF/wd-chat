@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -19,7 +20,12 @@ interface EncryptedDatastore {
 
     suspend fun writeUserPasscode(pass: String)
 
-    suspend fun readUserPasscode(): String
+    suspend fun readUserPasscode(): Flow<String?>
+
+    suspend fun writeUserName(name: String)
+
+    suspend fun readUserName(): Flow<String?>
+
 }
 
 class EncryptedDatastoreImpl @Inject constructor(
@@ -28,7 +34,8 @@ class EncryptedDatastoreImpl @Inject constructor(
 
     private val store = context.datastore
 
-    private val  USER_PASS_KEY = stringPreferencesKey("USER_PASS_KEY")
+    private val USER_PASS_KEY = stringPreferencesKey("USER_PASS_KEY")
+    private val USER_NAME_KEY = stringPreferencesKey("USER_NAME_KEY")
 
     override suspend fun writeUserPasscode(pass: String) {
         store.edit { prefs ->
@@ -38,11 +45,26 @@ class EncryptedDatastoreImpl @Inject constructor(
         }
     }
 
-    override suspend fun readUserPasscode(): String =
+    override suspend fun readUserPasscode(): Flow<String?> =
         store.data.map { prefs ->
             prefs[USER_PASS_KEY]?.let { encryptedPass ->
                 AESEncryption.decrypt(encryptedPass)
-            } ?: ""
-        }.first()
+            }
+        }
+
+    override suspend fun writeUserName(name: String) {
+        store.edit { prefs ->
+            AESEncryption.encrypt(name)?.let { encryptedName ->
+                prefs[USER_NAME_KEY] = encryptedName
+            }
+        }
+    }
+
+    override suspend fun readUserName(): Flow<String?> =
+        store.data.map { prefs ->
+            prefs[USER_NAME_KEY]?.let { encryptedName ->
+                AESEncryption.decrypt(encryptedName)
+            }
+        }
 
 }
