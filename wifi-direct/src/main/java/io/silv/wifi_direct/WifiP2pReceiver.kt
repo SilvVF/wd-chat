@@ -21,7 +21,21 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
-class WifiP2pReceiver: BroadcastReceiver() {
+/**
+ * [BroadcastReceiver] for WifiP2p events.
+ * @property eventBroadcast  [WifiP2pEvent] Emitted from [MutableSharedFlow.asSharedFlow].
+ * Collects events for following intent filters
+ * - [WIFI_P2P_STATE_CHANGED_ACTION]
+ * - [WIFI_P2P_PEERS_CHANGED_ACTION]
+ * - [WIFI_P2P_CONNECTION_CHANGED_ACTION]
+ * - [WIFI_P2P_THIS_DEVICE_CHANGED_ACTION],
+ * - [WIFI_P2P_DISCOVERY_CHANGED_ACTION]
+ * @param scope [CoroutineScope] that [onReceive] method for events will be executed in.
+ *
+ */
+class WifiP2pReceiver(
+    private val scope: CoroutineScope
+): BroadcastReceiver() {
 
     private val _eventBroadcast = MutableSharedFlow<WifiP2pEvent>()
     val eventBroadcast = _eventBroadcast.asSharedFlow()
@@ -31,7 +45,7 @@ class WifiP2pReceiver: BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        CoroutineScope(Dispatchers.IO).launch {
+        scope.launch {
             when (intent?.action) {
                 WIFI_P2P_STATE_CHANGED_ACTION -> {
                     logd("WIFI_P2P_STATE_CHANGED_ACTION")
