@@ -7,10 +7,12 @@ digraph {
 
   ":app" [fillcolor="#baffc9"];
   ":datastore" [fillcolor="#baffc9"];
+  ":feature-chat" [fillcolor="#baffc9"];
   ":feature-create-group" [fillcolor="#baffc9"];
   ":feature-search-users" [fillcolor="#baffc9"];
   ":local-database" [fillcolor="#baffc9"];
   ":on-boarding" [fillcolor="#baffc9"];
+  ":server" [fillcolor="#ffb3ba"];
   ":shared-ui-compose" [fillcolor="#baffc9"];
   ":wifi-direct" [fillcolor="#baffc9"];
 
@@ -22,15 +24,22 @@ digraph {
   ":app" -> ":on-boarding" [style=dotted]
   ":app" -> ":feature-search-users" [style=dotted]
   ":app" -> ":feature-create-group" [style=dotted]
+  ":app" -> ":feature-chat" [style=dotted]
   ":shared-ui-compose" -> ":shared-ui-compose"
   ":feature-create-group" -> ":shared-ui-compose"
   ":feature-create-group" -> ":wifi-direct"
   ":feature-create-group" -> ":feature-create-group"
+  ":feature-chat" -> ":shared-ui-compose"
+  ":feature-chat" -> ":wifi-direct"
+  ":feature-chat" -> ":server"
+  ":feature-chat" -> ":local-database"
+  ":feature-chat" -> ":feature-chat"
   ":datastore" -> ":datastore"
   ":feature-search-users" -> ":shared-ui-compose"
   ":feature-search-users" -> ":wifi-direct"
   ":feature-search-users" -> ":feature-search-users"
   ":on-boarding" -> ":shared-ui-compose"
+  ":on-boarding" -> ":datastore"
   ":on-boarding" -> ":on-boarding"
   ":wifi-direct" -> ":wifi-direct"
   ":local-database" -> ":local-database"
