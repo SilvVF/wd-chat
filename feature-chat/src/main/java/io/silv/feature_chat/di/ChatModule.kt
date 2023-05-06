@@ -17,4 +17,5 @@ object ChatModule {
     fun provideChatViewModel(
         p2p: P2p
     ): ChatViewModel = ChatViewModel(p2p)
+
 }

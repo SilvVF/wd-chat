@@ -2,6 +2,7 @@ package io.silv.server
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.silv.ChatMessage
+import io.silv.SendReceive
 import io.silv.WsObj
 import io.silv.serverPort
 import io.silv.suspendOnMessage
@@ -23,12 +24,12 @@ import org.http4k.websocket.WsMessage
 val lens = Body.auto<WsObj>().toLens()
 class ChatWebSocketServer(
     scope: CoroutineScope,
-) {
+): SendReceive {
 
     private val chatPath = Path.of("chat")
 
     private val mutWsObjFlow = MutableSharedFlow<WsObj>()
-    val wsObjFlow = mutWsObjFlow.asSharedFlow()
+    override val wsObjFlow = mutWsObjFlow.asSharedFlow()
 
     private val clientSocketList: MutableList<Websocket> = mutableListOf()
     private val mapper = jacksonObjectMapper()
@@ -55,7 +56,7 @@ class ChatWebSocketServer(
     }.asServer(Undertow(serverPort))
 
 
-    suspend fun send(data: WsObj) {
+    override suspend fun send(data: WsObj) {
         clientSocketList.forEach { ws ->
             ws.send(
                 WsMessage(

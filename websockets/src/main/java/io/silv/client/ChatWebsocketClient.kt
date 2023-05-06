@@ -1,6 +1,7 @@
 package io.silv.client
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.silv.SendReceive
 import io.silv.WsObj
 import io.silv.serverPort
 import io.silv.suspendOnMessage
@@ -9,16 +10,15 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import org.http4k.client.WebsocketClient
 import org.http4k.core.Uri
-import org.http4k.websocket.Websocket
 import org.http4k.websocket.WsMessage
 
 class ChatWebsocketClient(
     private val address: String,
     scope: CoroutineScope,
-) {
+): SendReceive {
 
     private val mutWsObjFlow = MutableSharedFlow<WsObj>()
-    val wsObjFlow = mutWsObjFlow.asSharedFlow()
+    override val wsObjFlow = mutWsObjFlow.asSharedFlow()
 
     private val mapper = jacksonObjectMapper()
 
@@ -37,7 +37,7 @@ class ChatWebsocketClient(
         }
     }
 
-    fun send(wsObj: WsObj) {
+    override suspend fun send(wsObj: WsObj) {
         client.send(
             WsMessage(
                 mapper.writeValueAsString(wsObj)
