@@ -16,7 +16,7 @@ rootProject.name = "WifiDirectChat"
 include ':app'
 include ':wifi-direct'
 include ':shared-ui-compose'
-include ':server'
+include ':websockets'
 include ':on-boarding'
 include ':feature-search-users'
 include ':local-database'

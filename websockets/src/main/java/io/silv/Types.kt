@@ -1,4 +1,4 @@
-package io.silv.server
+package io.silv
 
 import java.time.LocalDateTime
 
