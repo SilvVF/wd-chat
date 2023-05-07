@@ -95,7 +95,9 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     composable("next") {
-                        SearchUsersScreen()
+                        SearchUsersScreen {
+                            navController.navigate("chat")
+                        }
                     }
                     composable("create-group") {
                         CreateGroupScreen {

@@ -70,7 +70,9 @@ class SearchUsersViewModel @Inject constructor(
                             }
                         },
                         ifRight = { connected ->
-                           // TODO()
+                           if (connected) {
+                               eventChannel.send(SearchUsersEvent.JoinedGroup)
+                           }
                         }
                     )
             }
@@ -99,16 +101,17 @@ class SearchUsersViewModel @Inject constructor(
         }
     }
 
-    fun startSearchingNearbyDevices() = viewModelScope.launch {
+    private fun startSearchingNearbyDevices() = viewModelScope.launch {
         startDiscovery().first().fold(
-                ifLeft = {err ->
+                ifLeft = { err ->
                     when (err) {
-                        is P2pError.GenericError -> TODO()
-                        is P2pError.MissingPermission -> TODO()
+                         is P2pError.GenericError, is P2pError.MissingPermission ->  {
+                             eventChannel.send(SearchUsersEvent.ShowToast(err.message))
+                         }
                     }
                 },
                 ifRight = { started ->
-                    // TODO()
+
                 }
             )
     }
@@ -118,7 +121,8 @@ class SearchUsersViewModel @Inject constructor(
 
 sealed class SearchUsersEvent {
     object WifiP2pDisabled: SearchUsersEvent()
+
     data class ShowToast(val text: String): SearchUsersEvent()
 
-    data class JoinedGroup(val owner: Boolean): SearchUsersEvent()
+    object JoinedGroup: SearchUsersEvent()
 }

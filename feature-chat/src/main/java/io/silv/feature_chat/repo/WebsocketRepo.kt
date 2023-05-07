@@ -14,9 +14,8 @@ class WebsocketRepo (
 
     private lateinit var ws: SendReceive
 
-    private var groupOwner = false
     private val closeActions = mutableListOf<() -> Unit>()
-    
+
     fun getReceiveFlow(): Flow<WsObj> = flow {
         ws.wsObjFlow.collect { wsObj ->
             emit(wsObj)
@@ -27,16 +26,13 @@ class WebsocketRepo (
         groupOwner: Boolean,
         groupOwnerAddress: String,
     ){
-        runCatching {
-            if (groupOwner) {
-                this.groupOwner = true
-                ws = ChatWebSocketServer(scope).also {
-                    closeActions.add { it.startServer() }
-                }
-            } else {
-                this.groupOwner = false
-                ws = ChatWebsocketClient(groupOwnerAddress, scope)
+        ws = if (groupOwner) {
+           ChatWebSocketServer(scope).also {
+                it.startServer()
+                closeActions.add { it.stopServer() }
             }
+        } else {
+            ChatWebsocketClient(groupOwnerAddress, scope)
         }
     }
 
@@ -45,10 +41,8 @@ class WebsocketRepo (
     }
 
     fun stopConnection() {
-        runCatching {
-            closeActions.forEach { action ->
-                action.invoke()
-            }
+        closeActions.forEach { action ->
+            action.invoke()
         }
     }
 }
