@@ -17,21 +17,14 @@ internal fun observeWifiDirectEventsUseCaseImpl(
     return wifiP2pReceiver.eventBroadcast
 }
 
-internal fun startDiscoveryUseCaseImpl(
+internal suspend fun startDiscoveryUseCaseImpl(
     p2p: P2p
-): Flow<Either<P2pError, Boolean>> = p2p.startDiscovery()
-
-internal fun observePeersListUseCaseImpl(
-    p2p: P2p
-): Flow<List<WifiP2pDevice>> = p2p.peersFlow
-
-internal fun observeGroupInfoUseCaseImpl(
-    p2p: P2p
-): Flow<WifiP2pGroup> = p2p.groupInfoFlow
+): Either<P2pError, Boolean> = p2p.startDiscovery()
 
 
-internal fun connectToDeviceUseCaseImpl(
+
+internal suspend fun connectToDeviceUseCaseImpl(
     p2p: P2p,
     wifiP2pDevice: WifiP2pDevice,
     config: WifiP2pConfig.Builder.() -> Unit
-): Flow<Either<P2pError, Boolean>> = p2p.connect(wifiP2pDevice, config)
+): Either<P2pError, Boolean> = p2p.connect(wifiP2pDevice, config)

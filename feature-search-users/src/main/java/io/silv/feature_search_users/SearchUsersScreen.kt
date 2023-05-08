@@ -20,7 +20,7 @@ import io.silv.shared_ui.utils.toast
 fun SearchUsersScreen(
     viewModel: SearchUsersViewModel = hiltViewModel(),
     p2pDisabled: () -> Unit = {},
-    joinedGroup: () -> Unit
+    joinedGroup: (isGroupOwner: Boolean, groupOwnerAddress: String) -> Unit
 ) {
 
     val ctx = LocalContext.current
@@ -30,7 +30,7 @@ fun SearchUsersScreen(
             SearchUsersEvent.WifiP2pDisabled -> p2pDisabled()
             is SearchUsersEvent.ShowToast -> ctx.toast(sideEffect.text)
             is SearchUsersEvent.JoinedGroup -> {
-                joinedGroup()
+                joinedGroup(sideEffect.isGroupOwner, sideEffect.groupOwnerAddress)
             }
         }
     }

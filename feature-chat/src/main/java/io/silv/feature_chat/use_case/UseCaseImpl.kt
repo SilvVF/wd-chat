@@ -10,20 +10,16 @@ import io.silv.wifi_direct.types.P2pError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-fun sendChatUseCaseImpl(
-    message: String
-) {
-
-}
 
 suspend fun connectToChatUseCaseImpl(
-    wifiP2pGroup: WifiP2pGroup,
+    isGroupOwner: Boolean,
+    groupOwnerAddress: String,
     websocketRepo: WebsocketRepo
 ): Boolean {
     return runCatching {
         websocketRepo.startConnection(
-            groupOwner = wifiP2pGroup.isGroupOwner,
-            groupOwnerAddress = wifiP2pGroup.owner.deviceAddress
+            groupOwner = isGroupOwner,
+            groupOwnerAddress = groupOwnerAddress
         )
         true
     }
@@ -44,17 +40,6 @@ fun collectChatUseCaseImpl(
 
 suspend fun getGroupInfoUseCaseImpl(
     p2p: P2p
-): Either<P2pError, Flow<WifiP2pGroup>> {
-    return either {
-        // get initial group info without waiting on changes
-        val info = p2p.requestGroupInfo().bind()
-        flow {
-            //emit initial info
-            emit(info)
-            // emit any changes to group info
-            p2p.groupInfoFlow.collect {
-                emit(it)
-            }
-        }
-    }
+): Either<P2pError, WifiP2pGroup> {
+    return p2p.requestGroupInfo()
 }

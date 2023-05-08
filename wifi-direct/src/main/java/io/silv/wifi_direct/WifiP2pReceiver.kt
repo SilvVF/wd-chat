@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.NetworkInfo
 import android.net.wifi.p2p.WifiP2pDeviceList
+import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.WifiP2pManager.EXTRA_DISCOVERY_STATE
 import android.net.wifi.p2p.WifiP2pManager.EXTRA_P2P_DEVICE_LIST
@@ -68,11 +69,13 @@ class WifiP2pReceiver(
                 }
 
                 WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
-                    logd("WIFI_P2P_CONNECTION_CHANGED_ACTION")
                     val networkInfo: NetworkInfo? = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO)
+                    val p2pInfo: WifiP2pInfo? = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_INFO)
+                    logd("WIFI_P2P_CONNECTION_CHANGED_ACTION  $networkInfo, $p2pInfo")
                     _eventBroadcast.emit(
                         WifiP2pEvent.ConnectionChanged(
-                            networkInfo = networkInfo
+                            networkInfo = networkInfo ?: return@launch,
+                            p2pInfo = p2pInfo ?: return@launch
                         )
                     )
                 }

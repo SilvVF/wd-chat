@@ -11,13 +11,11 @@ import kotlinx.coroutines.flow.SharedFlow
 
 
 
-fun interface StartDiscoveryUseCase: () -> Flow<Either<P2pError, Boolean>>
-fun interface ObserveGroupInfoUseCase: () -> Flow<WifiP2pGroup>
-fun interface ObservePeersListUseCase: () -> Flow<List<WifiP2pDevice>>
+fun interface StartDiscoveryUseCase: suspend () -> Either<P2pError, Boolean>
 
 fun interface ObserveWifiDirectEventsUseCase: () -> SharedFlow<WifiP2pEvent>
 
-fun interface ConnectToDeviceUseCase: (
+fun interface ConnectToDeviceUseCase: suspend (
     WifiP2pDevice,
     WifiP2pConfig.Builder.() -> Unit
-) -> Flow<Either<P2pError, Boolean>>
+) -> Either<P2pError, Boolean>

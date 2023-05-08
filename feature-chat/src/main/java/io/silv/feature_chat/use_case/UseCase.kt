@@ -6,8 +6,8 @@ import io.silv.WsObj
 import io.silv.wifi_direct.types.P2pError
 import kotlinx.coroutines.flow.Flow
 
-fun interface GetGroupInfoUseCase: suspend () -> Either<P2pError, Flow<WifiP2pGroup>>
+fun interface GetGroupInfoUseCase: suspend () -> Either<P2pError, WifiP2pGroup>
 
-fun interface ConnectToChatUseCase: suspend (WifiP2pGroup) -> Boolean
+fun interface ConnectToChatUseCase: suspend (Boolean, String) -> Boolean
 
 fun interface CollectChatUseCase: () -> Either<Throwable, Flow<WsObj>>

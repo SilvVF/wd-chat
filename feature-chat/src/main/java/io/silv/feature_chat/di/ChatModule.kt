@@ -59,9 +59,10 @@ object ChatModule {
     @Provides
     fun provideConnectToChatUseCase(
         websocketRepo: WebsocketRepo
-    ): ConnectToChatUseCase = ConnectToChatUseCase { wifiP2pGroup ->
+    ): ConnectToChatUseCase = ConnectToChatUseCase { owner, address ->
         connectToChatUseCaseImpl(
-            wifiP2pGroup = wifiP2pGroup,
+            isGroupOwner = owner,
+            groupOwnerAddress = address,
             websocketRepo = websocketRepo
         )
     }

@@ -10,13 +10,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ViewModelScoped
 import io.silv.feature_search_users.SearchUsersViewModel
 import io.silv.feature_search_users.use_case.ConnectToDeviceUseCase
-import io.silv.feature_search_users.use_case.ObserveGroupInfoUseCase
-import io.silv.feature_search_users.use_case.ObservePeersListUseCase
 import io.silv.feature_search_users.use_case.ObserveWifiDirectEventsUseCase
 import io.silv.feature_search_users.use_case.StartDiscoveryUseCase
 import io.silv.feature_search_users.use_case.connectToDeviceUseCaseImpl
-import io.silv.feature_search_users.use_case.observeGroupInfoUseCaseImpl
-import io.silv.feature_search_users.use_case.observePeersListUseCaseImpl
 import io.silv.feature_search_users.use_case.observeWifiDirectEventsUseCaseImpl
 import io.silv.feature_search_users.use_case.startDiscoveryUseCaseImpl
 import io.silv.wifi_direct.P2p
@@ -31,14 +27,10 @@ object SearchUserModule {
     fun provideSearchUsersViewModel(
         wifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase,
         connectToDeviceUseCase: ConnectToDeviceUseCase,
-        observePeersListUseCase: ObservePeersListUseCase,
-        observeGroupInfoUseCase: ObserveGroupInfoUseCase,
         startDiscoveryUseCase: StartDiscoveryUseCase,
     ): SearchUsersViewModel = SearchUsersViewModel(
         wifiDirectEventsUseCase = wifiDirectEventsUseCase,
         connectToDeviceUseCase = connectToDeviceUseCase,
-        observePeersList = observePeersListUseCase,
-        observeGroupInfo = observeGroupInfoUseCase,
         startDiscovery = startDiscoveryUseCase
     )
 
@@ -50,21 +42,6 @@ object SearchUserModule {
         return P2p.getImpl(context, wifiP2pManager)
     }
 
-    @ViewModelScoped
-    @Provides
-    fun provideObservePeersListUseCase(
-        p2p: P2p
-    ): ObservePeersListUseCase = ObservePeersListUseCase {
-        observePeersListUseCaseImpl(p2p)
-    }
-
-    @ViewModelScoped
-    @Provides
-    fun provideObserveGroupInfoUseCase(
-        p2p: P2p
-    ): ObserveGroupInfoUseCase = ObserveGroupInfoUseCase {
-        observeGroupInfoUseCaseImpl(p2p)
-    }
 
     @ViewModelScoped
     @Provides

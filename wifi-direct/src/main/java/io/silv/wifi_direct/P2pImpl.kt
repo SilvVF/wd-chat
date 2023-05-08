@@ -12,6 +12,9 @@ import android.os.Looper
 import arrow.core.Either
 import io.silv.wifi_direct.types.P2pError
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
@@ -22,16 +25,13 @@ import kotlinx.coroutines.flow.flow
 internal class P2pImpl(
     ctx: Context,
     private val wifiP2pManager: WifiP2pManager,
-): P2p, P2pCallbacks {
+): P2p {
 
 
     private val channel: WifiP2pManager.Channel =
         wifiP2pManager.initialize(ctx, Looper.getMainLooper()) {
             //handle disconnect
         }
-
-    override val peersFlow: Flow<List<WifiP2pDevice>> = peerListListenerCallbackFlow
-    override val groupInfoFlow: Flow<WifiP2pGroup> = groupInfoListenerCallbackFlow
 
     override suspend fun requestGroupInfo(): Either<P2pError, WifiP2pGroup> {
         return Either.catch {
@@ -41,8 +41,12 @@ internal class P2pImpl(
         }
     }
 
-    override fun startDiscovery(): Flow<Either<P2pError, Boolean>> = flow {
-        emit(discoverDevicesCallbackFlow.first())
+    override suspend fun startDiscovery(): Either<P2pError, Boolean> {
+        return Either.catch {
+            discoverDevicesCallbackFlow.first()
+        }.mapLeft {
+            P2pError.GenericError(it.message ?: "unknown error")
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -52,18 +56,19 @@ internal class P2pImpl(
         }
         awaitCancellation()
     }
-    override fun connect(
+    override suspend fun connect(
         device: WifiP2pDevice,
         config: WifiP2pConfig.Builder.() -> Unit
-    ): Flow<Either<P2pError, Boolean>> = flow {
-        emit(
+    ): Either<P2pError, Boolean>  {
+        return Either.catch {
             connectCallbackFlow(
                 WifiP2pConfig.Builder()
                     .apply(config)
                     .build()
-            )
-                .first()
-        )
+            ).first()
+        }.mapLeft {
+            P2pError.GenericError(it.message ?: "unknown error")
+        }
     }
 
     override suspend fun createGroup(
@@ -82,20 +87,16 @@ internal class P2pImpl(
 
     @SuppressLint("MissingPermission")
     private val discoverDevicesCallbackFlow = callbackFlow {
-        Either.catch {
             wifiP2pManager.discoverPeers(this@P2pImpl.channel, object: ActionListener {
                 override fun onSuccess() {
-                    trySend(Either.Right(true))
+                    trySendBlocking(true)
                 }
 
                 override fun onFailure(p0: Int) {
-                    trySend(Either.Left(P2pError.GenericError("$p0")))
+                    close(cause = IllegalStateException())
                 }
             })
-        }.mapLeft { t ->
-            Either.Left(P2pError.MissingPermission("$t"))
-        }
-        awaitCancellation()
+        awaitClose()
     }
 
     private val createGroupPrefix = "DIRECT-xy"
@@ -109,32 +110,28 @@ internal class P2pImpl(
             }.build(),
             object: ActionListener {
                 override fun onSuccess() {
-                    trySend(true)
+                    trySendBlocking(true)
                 }
                 override fun onFailure(p0: Int) {
-                    trySend(false)
+                    close(IllegalStateException())
                 }
         })
-        awaitCancellation()
+        awaitClose()
     }
 
     @SuppressLint("MissingPermission")
-    private fun connectCallbackFlow(cfg: WifiP2pConfig) = callbackFlow<Either<P2pError, Boolean>> {
-        Either.catch {
+    private fun connectCallbackFlow(cfg: WifiP2pConfig) = callbackFlow {
             wifiP2pManager.connect(
                 this@P2pImpl.channel, cfg,
                 object : ActionListener {
                     override fun onSuccess() {
-                        trySend(Either.Right(true))
+                        trySendBlocking(true)
                     }
                     override fun onFailure(p0: Int) {
-                        trySend(Either.Left(P2pError.GenericError("$p0")))
+                       close(IllegalStateException())
                     }
                 }
             )
-        }.mapLeft { t ->
-            Either.Left(P2pError.MissingPermission(t.message ?: ""))
-        }
-        awaitCancellation()
+            awaitClose()
     }
 }

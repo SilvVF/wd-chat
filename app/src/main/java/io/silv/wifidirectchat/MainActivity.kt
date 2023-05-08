@@ -17,9 +17,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import io.silv.feature_chat.ChatScreen
 import io.silv.feature_create_group.CreateGroupScreen
@@ -95,7 +97,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     composable("next") {
-                        SearchUsersScreen {
+                        SearchUsersScreen { isGroupOwner, groupOwnerAddress ->
                             navController.navigate("chat")
                         }
                     }
@@ -104,8 +106,17 @@ class MainActivity : ComponentActivity() {
                             navController.navigate("chat")
                         }
                     }
-                    composable("chat") {
-                        ChatScreen()
+                    composable(
+                        "chat/{owner}/{address}",
+                        arguments = listOf(
+                            navArgument("owner") { NavType.BoolType },
+                            navArgument("address") { NavType.StringType }
+                        )
+                    ) { backStackEntry ->
+                        ChatScreen(
+                            backStackEntry.arguments?.getBoolean("owner") ?: true,
+                            backStackEntry.arguments?.getString("address") ?: "127.0.0.1"
+                        )
                     }
                 }
             }

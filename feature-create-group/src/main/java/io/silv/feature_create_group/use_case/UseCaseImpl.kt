@@ -16,11 +16,5 @@ internal suspend fun createGroupUseCaseImpl(
     return p2p.createGroup(
         passPhrase,
         networkName
-    ).onRight { created ->
-        if (created) {
-            scope.launch {
-                val groupInfo = p2p.groupInfoFlow.first()
-            }
-        }
-    }
+    )
 }
