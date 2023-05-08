@@ -1,92 +1,82 @@
 package io.silv.server
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.silv.ChatMessage
+import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter
+import io.ktor.server.application.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import io.ktor.server.plugins.callloging.*
+import io.ktor.server.routing.*
+import io.ktor.server.websocket.*
+import io.ktor.server.websocket.WebSockets
+import io.ktor.websocket.*
 import io.silv.SendReceive
-import io.silv.WsObj
+import io.silv.WsData
+import io.silv.json
 import io.silv.serverPort
-import io.silv.suspendOnMessage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import org.http4k.core.Body
-import org.http4k.format.Jackson.auto
-import org.http4k.lens.Path
-import org.http4k.routing.bind
-import org.http4k.routing.websockets
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.flow.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.slf4j.event.Level
+import java.util.Collections
 
-import org.http4k.server.Undertow
-import org.http4k.server.asServer
-import org.http4k.websocket.Websocket
-import org.http4k.websocket.WsMessage
-
-
-val lens = Body.auto<WsObj>().toLens()
 class ChatWebSocketServer(
-    scope: CoroutineScope,
+    private val scope: CoroutineScope,
 ): SendReceive {
 
-    private val chatPath = Path.of("chat")
+    private val mutWsDataFlow = MutableSharedFlow<WsData>()
+    override val wsDataFlow = mutWsDataFlow.asSharedFlow()
 
-    private val mutWsObjFlow = MutableSharedFlow<WsObj>()
-    override val wsObjFlow = mutWsObjFlow.asSharedFlow()
+    val connections = Collections.synchronizedSet<DefaultWebSocketSession>(LinkedHashSet())
 
-    private val clientSocketList: MutableList<Websocket> = mutableListOf()
-    private val mapper = jacksonObjectMapper()
-
-    private val ws = websockets {
-        "/{chat}" bind { ws: Websocket ->
-            chatPath(ws.upgradeRequest)
-            // Add connection to client list used later when sending
-            clientSocketList.add(ws)
-
-            ws.send(WsMessage("Connected"))
-
-
-            ws.suspendOnMessage(scope, mapper, ws) { wsObj, ws ->
-                onReceived(wsObj)
-
-                // send message to all others connected
-                sendToOthers(
-                    data = wsObj,
-                    sender = ws
-                )
+    fun start() = scope.launch {
+        embeddedServer(
+            factory = Netty,
+            port = serverPort,
+        ) {
+            install(CallLogging) {
+                level = Level.INFO
             }
-        }
-    }.asServer(Undertow(serverPort))
+            install(Routing)
+            install(WebSockets) {
+                contentConverter = KotlinxWebsocketSerializationConverter(json)
+            }
 
 
-    override suspend fun send(data: WsObj) {
-        clientSocketList.forEach { ws ->
-            ws.send(
-                WsMessage(
-                    mapper.writeValueAsString(data)
-                )
+
+            routing {
+                webSocket("/chat") {
+                    connections += this
+                    println(connections.toString() + connections.size)
+                    try {
+                        val data = receiveDeserialized<WsData>()
+                        mutWsDataFlow.emit(data)
+                    } catch (e: ClosedReceiveChannelException) {
+                        println("onClose ${closeReason.await()}")
+                    } catch (e: Exception) {
+                      e.printStackTrace()
+                    } finally {
+                        connections -= this
+                    }
+                }
+            }
+        }.start(true)
+    }
+
+    override suspend fun send(wsData: WsData) {
+        connections.forEach { session ->
+            session.send(
+                Frame.Text(Json.encodeToString(wsData))
             )
         }
     }
-    private suspend fun sendToOthers(data: WsObj, sender: Websocket) {
-        clientSocketList
-            .filter { it != sender }
-            .forEach { ws ->
-                ws.send(
-                    WsMessage(
-                        mapper.writeValueAsString(data)
-                    )
-                )
-            }
-    }
-
-    private suspend fun onReceived(wsObj: WsObj) {
-        when(wsObj) {
-            is ChatMessage -> mutWsObjFlow.emit(wsObj)
+    private suspend fun sendToOthers(data: WsData, sender: DefaultWebSocketSession) {
+        connections.forEach { wsSession ->
+            wsSession.send(
+                Frame.Text(Json.encodeToString(data))
+            )
         }
-    }
-    fun startServer() {
-        ws.start()
-    }
-    fun stopServer(){
-        ws.stop()
     }
 }
 

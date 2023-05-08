@@ -10,7 +10,7 @@ sealed class WifiP2pEvent {
 
     data class PeersChanged(val peers: List<WifiP2pDevice>): WifiP2pEvent()
 
-    data class ConnectionChanged(val networkInfo: NetworkInfo, val p2pInfo: WifiP2pInfo): WifiP2pEvent()
+    data class ConnectionChanged(val networkInfo: NetworkInfo?, val p2pInfo: WifiP2pInfo): WifiP2pEvent()
 
     object ThisDeviceChanged : WifiP2pEvent()
 

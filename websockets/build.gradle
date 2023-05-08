@@ -1,21 +1,22 @@
 plugins {
     id 'java-library'
     id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.8.21'
 }
 
 java {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
 }
-
+def ktor_version = '2.3.0'
 dependencies {
-    implementation(platform("org.http4k:http4k-bom:4.42.1.0"))
-    implementation("org.http4k:http4k-core")
-    implementation("org.http4k:http4k-client-websocket")
-    implementation("org.http4k:http4k-format-jackson")
-    implementation "org.http4k:http4k-server-undertow"
-    // Apache v5 (Async):
-    implementation("org.http4k:http4k-client-apache-async")
-
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0")
+    implementation("io.ktor:ktor-network:$ktor_version")
+    implementation("io.ktor:ktor-server-websockets:$ktor_version")
+    implementation("io.ktor:ktor-client-websockets:$ktor_version")
+    implementation("io.ktor:ktor-server-core:$ktor_version")
+    implementation("io.ktor:ktor-server-netty:$ktor_version")
+    implementation("io.ktor:ktor-server-call-logging:$ktor_version")
+    implementation("io.ktor:ktor-client-cio:$ktor_version")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 }

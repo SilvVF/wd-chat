@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.SharedFlow
 
 interface SendReceive {
 
-    val wsObjFlow: SharedFlow<WsObj>
+    val wsDataFlow: SharedFlow<WsData>
 
-    suspend fun send(wsObj: WsObj)
+    suspend fun send(wsData: WsData)
 }

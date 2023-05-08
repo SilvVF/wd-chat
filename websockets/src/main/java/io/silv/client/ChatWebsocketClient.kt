@@ -1,46 +1,54 @@
 package io.silv.client
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.websocket.receiveDeserialized
+import io.ktor.client.plugins.websocket.webSocket
+import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter
+import io.ktor.websocket.DefaultWebSocketSession
+import io.ktor.websocket.Frame
 import io.silv.SendReceive
-import io.silv.WsObj
+import io.silv.WsData
+import io.silv.json
 import io.silv.serverPort
-import io.silv.suspendOnMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import org.http4k.client.WebsocketClient
-import org.http4k.core.Uri
-import org.http4k.websocket.WsMessage
+import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class ChatWebsocketClient(
     private val address: String,
-    scope: CoroutineScope,
+    private val scope: CoroutineScope,
 ): SendReceive {
 
-    private val mutWsObjFlow = MutableSharedFlow<WsObj>()
-    override val wsObjFlow = mutWsObjFlow.asSharedFlow()
+    private val mutWsDataFlow = MutableSharedFlow<WsData>()
+    override val wsDataFlow = mutWsDataFlow.asSharedFlow()
 
-    private val mapper = jacksonObjectMapper()
+    private  var session: DefaultWebSocketSession? = null
 
+    fun start() = scope.launch { startClient() }
 
-    private val client = WebsocketClient.nonBlocking(
-        Uri.of("ws://$address:$serverPort/chat")
-    ) { ws ->
-        ws.run {
-            send(WsMessage("Connected"))
+    private suspend fun startClient() = HttpClient(CIO) {
+        install(WebSockets) {
+            contentConverter = KotlinxWebsocketSerializationConverter(json)
         }
+    }.webSocket(
+        host = address,
+        port = serverPort,
+        path = "/chat"
+    ) {
+        session = this
+        val data = receiveDeserialized<WsData>()
+        mutWsDataFlow.emit(data)
     }
 
-    init {
-        client.suspendOnMessage(scope, mapper, client) { wsObj, ws ->
-            mutWsObjFlow.emit(wsObj)
-        }
-    }
-
-    override suspend fun send(wsObj: WsObj) {
-        client.send(
-            WsMessage(
-                mapper.writeValueAsString(wsObj)
+    override suspend fun send(wsData: WsData) {
+        session?.send(
+            Frame.Text(
+                Json.encodeToString(wsData)
             )
         )
     }

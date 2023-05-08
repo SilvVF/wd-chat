@@ -10,9 +10,11 @@ import io.silv.feature_chat.repo.WebsocketRepo
 import io.silv.feature_chat.use_case.CollectChatUseCase
 import io.silv.feature_chat.use_case.ConnectToChatUseCase
 import io.silv.feature_chat.use_case.GetGroupInfoUseCase
+import io.silv.feature_chat.use_case.SendChatUseCase
 import io.silv.feature_chat.use_case.collectChatUseCaseImpl
 import io.silv.feature_chat.use_case.connectToChatUseCaseImpl
 import io.silv.feature_chat.use_case.getGroupInfoUseCaseImpl
+import io.silv.feature_chat.use_case.sendChatUseCaseImpl
 import io.silv.wifi_direct.P2p
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,11 +28,13 @@ object ChatModule {
     fun provideChatViewModel(
         getGroupInfoUseCase: GetGroupInfoUseCase,
         connectToChatUseCase: ConnectToChatUseCase,
-        collectChatUseCase: CollectChatUseCase
+        collectChatUseCase: CollectChatUseCase,
+        sendChatUseCase: SendChatUseCase
     ): ChatViewModel = ChatViewModel(
         getGroupInfoUseCase = getGroupInfoUseCase,
         connectToChatUseCase = connectToChatUseCase,
-        collectChatUseCase = collectChatUseCase
+        collectChatUseCase = collectChatUseCase,
+        sendChatUseCase = sendChatUseCase
     )
 
     @ViewModelScoped
@@ -45,6 +49,15 @@ object ChatModule {
         websocketRepo: WebsocketRepo
     ) = CollectChatUseCase {
         collectChatUseCaseImpl(websocketRepo)
+    }
+
+
+    @ViewModelScoped
+    @Provides
+    fun provideSendChatUseCase(
+        websocketRepo: WebsocketRepo
+    ) = SendChatUseCase {
+        sendChatUseCaseImpl(websocketRepo, it)
     }
 
     @ViewModelScoped

@@ -17,7 +17,7 @@ import android.net.wifi.p2p.WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION
 import android.net.wifi.p2p.WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION
 import io.silv.wifi_direct.util.logd
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -38,7 +38,10 @@ class WifiP2pReceiver(
     private val scope: CoroutineScope
 ): BroadcastReceiver() {
 
-    private val _eventBroadcast = MutableSharedFlow<WifiP2pEvent>()
+    private val _eventBroadcast = MutableSharedFlow<WifiP2pEvent>(
+        replay = 0,
+        onBufferOverflow = BufferOverflow.SUSPEND
+    )
     val eventBroadcast = _eventBroadcast.asSharedFlow()
 
     init {
@@ -74,7 +77,7 @@ class WifiP2pReceiver(
                     logd("WIFI_P2P_CONNECTION_CHANGED_ACTION  $networkInfo, $p2pInfo")
                     _eventBroadcast.emit(
                         WifiP2pEvent.ConnectionChanged(
-                            networkInfo = networkInfo ?: return@launch,
+                            networkInfo = networkInfo,
                             p2pInfo = p2pInfo ?: return@launch
                         )
                     )

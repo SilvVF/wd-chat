@@ -42,7 +42,11 @@ class SearchUsersViewModel @Inject constructor(
             ?.let { device ->
                 connectToDeviceUseCase(device) {
                     setDeviceAddress(MacAddress.fromString(device.deviceAddress))
-                    setPassphrase("password") // TODO(ask for password in setup)
+
+                }.onRight {
+                    eventChannel.send(
+                        SearchUsersEvent.ShowToast("connected")
+                    )
                 }
                     .onLeft {error ->
                         eventChannel.send(
@@ -57,10 +61,12 @@ class SearchUsersViewModel @Inject constructor(
         wifiDirectEventsUseCase().collect { event ->
             when (event) {
                 is WifiP2pEvent.ConnectionChanged -> {
-                    if (event.p2pInfo.isGroupOwner) {
-                        SearchUsersEvent.JoinedGroup(
-                            groupOwnerAddress = event.p2pInfo.groupOwnerAddress.toString(),
-                            isGroupOwner = event.p2pInfo.isGroupOwner
+                    if (event.p2pInfo.groupFormed) {
+                        eventChannel.send(
+                            SearchUsersEvent.JoinedGroup(
+                                groupOwnerAddress = event.p2pInfo.groupOwnerAddress.toString(),
+                                isGroupOwner = event.p2pInfo.isGroupOwner
+                            )
                         )
                     }
                 }

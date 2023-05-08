@@ -5,6 +5,7 @@ import android.content.IntentFilter
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -98,7 +99,10 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("next") {
                         SearchUsersScreen { isGroupOwner, groupOwnerAddress ->
-                            navController.navigate("chat")
+                            navController.navigate(
+                                "chat/$isGroupOwner/${groupOwnerAddress.drop(1)}",
+
+                            )
                         }
                     }
                     composable("create-group") {
@@ -109,12 +113,13 @@ class MainActivity : ComponentActivity() {
                     composable(
                         "chat/{owner}/{address}",
                         arguments = listOf(
-                            navArgument("owner") { NavType.BoolType },
+                            navArgument("owner") { NavType.StringType },
                             navArgument("address") { NavType.StringType }
                         )
                     ) { backStackEntry ->
+                        Log.d("P2P", "djfhkashdfjshdfjrsjkdfjkasdfhjkashdfrjs")
                         ChatScreen(
-                            backStackEntry.arguments?.getBoolean("owner") ?: true,
+                            backStackEntry.arguments?.getString("owner")?.first() == 't',
                             backStackEntry.arguments?.getString("address") ?: "127.0.0.1"
                         )
                     }

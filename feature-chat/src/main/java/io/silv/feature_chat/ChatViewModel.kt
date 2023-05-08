@@ -5,7 +5,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.silv.feature_chat.use_case.CollectChatUseCase
 import io.silv.feature_chat.use_case.ConnectToChatUseCase
 import io.silv.feature_chat.use_case.GetGroupInfoUseCase
+import io.silv.feature_chat.use_case.SendChatUseCase
 import io.silv.shared_ui.utils.EventViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -18,7 +20,8 @@ import javax.inject.Inject
 class ChatViewModel @Inject constructor(
     getGroupInfoUseCase: GetGroupInfoUseCase,
     private val connectToChatUseCase: ConnectToChatUseCase,
-    private val collectChatUseCase: CollectChatUseCase
+    private val collectChatUseCase: CollectChatUseCase,
+    private val sendChatUseCase: SendChatUseCase
 ): EventViewModel<ChatEvent>() {
 
     private val mutableChatFlow = MutableStateFlow(emptyList<String>())
@@ -36,7 +39,13 @@ class ChatViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), ChatUiState())
 
     fun startChatServer(isGroupOwner: Boolean, groupOwnerAddress: String) = viewModelScope.launch {
-        connectToChatUseCase(isGroupOwner, groupOwnerAddress)
+        connectToChatUseCase(isGroupOwner, groupOwnerAddress).run {
+            if (this) {
+                serverConnected.emit(true)
+                startCollectingChat()
+                sendChat("testing")
+            }
+        }
     }
     private fun startCollectingChat() = viewModelScope.launch {
         collectChatUseCase().fold(
@@ -51,6 +60,13 @@ class ChatViewModel @Inject constructor(
                 }
             }
         )
+    }
+
+    fun sendChat(message: String) = viewModelScope.launch {
+        while (true) {
+            sendChatUseCase(message)
+            delay(2000)
+        }
     }
 }
 

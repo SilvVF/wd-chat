@@ -2,36 +2,50 @@ package io.silv.feature_chat.use_case
 
 import android.net.wifi.p2p.WifiP2pGroup
 import arrow.core.Either
-import arrow.core.raise.either
-import io.silv.WsObj
+import io.silv.ChatMessage
+
+import io.silv.WsData
 import io.silv.feature_chat.repo.WebsocketRepo
 import io.silv.wifi_direct.P2p
 import io.silv.wifi_direct.types.P2pError
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 
-
+private var go = false
+suspend fun sendChatUseCaseImpl(
+    websocketRepo: WebsocketRepo,
+    message: String
+) {
+    runCatching {
+        websocketRepo.send(
+            ChatMessage(
+                message = message,
+                name = "groupOwner - $go",
+                address = "0.0.0.0",
+            )
+        )
+    }.onFailure { it.printStackTrace() }
+}
 suspend fun connectToChatUseCaseImpl(
     isGroupOwner: Boolean,
     groupOwnerAddress: String,
     websocketRepo: WebsocketRepo
 ): Boolean {
-    return runCatching {
+    go = isGroupOwner
+    runCatching {
         websocketRepo.startConnection(
             groupOwner = isGroupOwner,
             groupOwnerAddress = groupOwnerAddress
         )
-        true
     }
         .onFailure {
             it.printStackTrace()
         }
-        .getOrDefault(false)
+    return true
 }
 
 fun collectChatUseCaseImpl(
     websocketRepo: WebsocketRepo
-): Either<Throwable, Flow<WsObj>> {
+): Either<Throwable, Flow<WsData>> {
     return Either.catch {
         websocketRepo.getReceiveFlow()
     }

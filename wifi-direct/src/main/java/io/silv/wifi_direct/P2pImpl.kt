@@ -2,23 +2,20 @@ package io.silv.wifi_direct
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.wifi.WpsInfo
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.WifiP2pManager.ActionListener
-import android.net.wifi.p2p.WifiP2pManager.GroupInfoListener
 import android.os.Looper
 import arrow.core.Either
 import io.silv.wifi_direct.types.P2pError
 import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 
 
 
@@ -65,6 +62,9 @@ internal class P2pImpl(
                 WifiP2pConfig.Builder()
                     .apply(config)
                     .build()
+                    .apply {
+                        wps.setup = WpsInfo.PBC
+                    }
             ).first()
         }.mapLeft {
             P2pError.GenericError(it.message ?: "unknown error")

@@ -33,7 +33,6 @@ fun ChatScreen(
         }
         return
     }
-
     LazyColumn(Modifier.fillMaxSize()) {
         item { Text(text = "chat")}
         items(state.messages) {
