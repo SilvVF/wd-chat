@@ -13,6 +13,7 @@ import io.silv.WsData
 import io.silv.json
 import io.silv.serverPort
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -41,8 +42,17 @@ class ChatWebsocketClient(
         path = "/chat"
     ) {
         session = this
-        val data = receiveDeserialized<WsData>()
-        mutWsDataFlow.emit(data)
+        try {
+            while (true) {
+                val data = receiveDeserialized<WsData>()
+                mutWsDataFlow.emit(data)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+           session = null
+           cancel()
+        }
     }
 
     override suspend fun send(wsData: WsData) {

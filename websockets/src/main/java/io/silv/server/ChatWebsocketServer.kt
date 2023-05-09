@@ -1,5 +1,6 @@
 package io.silv.server
 
+import io.ktor.client.plugins.websocket.receiveDeserialized
 import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -28,7 +29,8 @@ class ChatWebSocketServer(
     private val mutWsDataFlow = MutableSharedFlow<WsData>()
     override val wsDataFlow = mutWsDataFlow.asSharedFlow()
 
-    val connections = Collections.synchronizedSet<DefaultWebSocketSession>(LinkedHashSet())
+    private val connections: MutableSet<DefaultWebSocketSession> =
+        Collections.synchronizedSet(LinkedHashSet())
 
     fun start() = scope.launch {
         embeddedServer(
@@ -39,29 +41,34 @@ class ChatWebSocketServer(
                 level = Level.INFO
             }
             install(Routing)
-            install(WebSockets) {
-                contentConverter = KotlinxWebsocketSerializationConverter(json)
-            }
+            serverWebSockets()
+        }.start(true)
+    }
 
+    private fun Application.serverWebSockets() {
 
+        install(WebSockets) {
+            contentConverter = KotlinxWebsocketSerializationConverter(json)
+        }
 
-            routing {
-                webSocket("/chat") {
-                    connections += this
-                    println(connections.toString() + connections.size)
-                    try {
+        routing {
+            webSocket("/chat") {
+                connections += this
+                try {
+                    while (true) {
                         val data = receiveDeserialized<WsData>()
                         mutWsDataFlow.emit(data)
-                    } catch (e: ClosedReceiveChannelException) {
-                        println("onClose ${closeReason.await()}")
-                    } catch (e: Exception) {
-                      e.printStackTrace()
-                    } finally {
-                        connections -= this
+                        sendToOthers(data, this)
                     }
+                } catch (e: ClosedReceiveChannelException) {
+                    println("onClose ${closeReason.await()}")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                } finally {
+                    connections -= this
                 }
             }
-        }.start(true)
+        }
     }
 
     override suspend fun send(wsData: WsData) {
@@ -73,6 +80,9 @@ class ChatWebSocketServer(
     }
     private suspend fun sendToOthers(data: WsData, sender: DefaultWebSocketSession) {
         connections.forEach { wsSession ->
+            if (wsSession == sender) {
+                return@forEach
+            }
             wsSession.send(
                 Frame.Text(Json.encodeToString(data))
             )

@@ -25,25 +25,27 @@ class ChatViewModel @Inject constructor(
 ): EventViewModel<ChatEvent>() {
 
     private val mutableChatFlow = MutableStateFlow(emptyList<String>())
-    private val serverConnected = MutableStateFlow(false)
+    private val serverConnected = MutableStateFlow<Boolean?>(null)
 
     val chatUiState = combine(
         mutableChatFlow,
         serverConnected
     ) { chats, serverConnected ->
-        ChatUiState(
-            connectedToServer = serverConnected,
-            messages = chats
-        )
+        when (serverConnected) {
+            null -> ChatUiState.Loading
+            true -> ChatUiState.Success(chats)
+            false -> ChatUiState.Error
+        }
     }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), ChatUiState())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), ChatUiState.Loading)
 
     fun startChatServer(isGroupOwner: Boolean, groupOwnerAddress: String) = viewModelScope.launch {
         connectToChatUseCase(isGroupOwner, groupOwnerAddress).run {
             if (this) {
                 serverConnected.emit(true)
                 startCollectingChat()
-                sendChat("testing")
+            } else {
+
             }
         }
     }
@@ -63,17 +65,18 @@ class ChatViewModel @Inject constructor(
     }
 
     fun sendChat(message: String) = viewModelScope.launch {
-        while (true) {
-            sendChatUseCase(message)
-            delay(2000)
-        }
+        sendChatUseCase(message)
     }
 }
 
-data class ChatUiState (
-    val connectedToServer: Boolean = false,
-    val messages: List<String> = emptyList()
-)
+sealed class ChatUiState {
+    object Loading: ChatUiState()
+    data class Success(
+        val messages: List<String> = emptyList()
+    ): ChatUiState()
+
+    object Error: ChatUiState()
+}
 
 sealed class ChatEvent() {
 
