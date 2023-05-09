@@ -4,10 +4,10 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.silv.feature_chat.use_case.CollectChatUseCase
 import io.silv.feature_chat.use_case.ConnectToChatUseCase
-import io.silv.feature_chat.use_case.GetGroupInfoUseCase
+import io.silv.feature_chat.use_case.ObserveWifiDirectEventsUseCase
 import io.silv.feature_chat.use_case.SendChatUseCase
 import io.silv.shared_ui.utils.EventViewModel
-import kotlinx.coroutines.delay
+import io.silv.wifi_direct.WifiP2pEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
-    getGroupInfoUseCase: GetGroupInfoUseCase,
+    observeWifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase,
     private val connectToChatUseCase: ConnectToChatUseCase,
     private val collectChatUseCase: CollectChatUseCase,
     private val sendChatUseCase: SendChatUseCase
@@ -38,30 +38,42 @@ class ChatViewModel @Inject constructor(
         }
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), ChatUiState.Loading)
+    init {
+        viewModelScope.launch {
+            observeWifiDirectEventsUseCase().collect { event ->
+                when (event) {
+                    is WifiP2pEvent.ConnectionChanged -> {
+                        if (!event.p2pInfo.groupFormed) {
+                            eventChannel.send(ChatEvent.LostConnectionToGroup)
+                        }
+                    }
+
+                    else -> Unit
+                }
+            }
+        }
+    }
 
     fun startChatServer(isGroupOwner: Boolean, groupOwnerAddress: String) = viewModelScope.launch {
-        connectToChatUseCase(isGroupOwner, groupOwnerAddress).run {
-            if (this) {
-                serverConnected.emit(true)
+        connectToChatUseCase(isGroupOwner, groupOwnerAddress).also { connected ->
+            serverConnected.emit(connected)
+            if (connected) {
                 startCollectingChat()
-            } else {
-
             }
         }
     }
     private fun startCollectingChat() = viewModelScope.launch {
-        collectChatUseCase().fold(
-            ifLeft = {
-                it.printStackTrace()
-            },
-            ifRight = {
-                it.collect { chat ->
-                    mutableChatFlow.getAndUpdate { list ->
-                        list + chat.toString()
-                    }
+        collectChatUseCase().onRight { wsData ->
+            wsData.collect { data ->
+                mutableChatFlow.getAndUpdate { list ->
+                    list + data.toString()
                 }
             }
-        )
+        }.onLeft {
+            eventChannel.send(
+                ChatEvent.Error(it.message ?: "Unknown error")
+            )
+        }
     }
 
     fun sendChat(message: String) = viewModelScope.launch {
@@ -78,6 +90,10 @@ sealed class ChatUiState {
     object Error: ChatUiState()
 }
 
-sealed class ChatEvent() {
+sealed class ChatEvent {
+    object NavigateToHome: ChatEvent()
 
+    object LostConnectionToGroup: ChatEvent()
+
+    data class Error(val message: String): ChatEvent()
 }

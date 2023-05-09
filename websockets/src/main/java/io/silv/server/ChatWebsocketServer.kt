@@ -1,6 +1,5 @@
 package io.silv.server
 
-import io.ktor.client.plugins.websocket.receiveDeserialized
 import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -22,7 +21,7 @@ import kotlinx.serialization.json.Json
 import org.slf4j.event.Level
 import java.util.Collections
 
-class ChatWebSocketServer(
+class ChatWebsocketServer(
     private val scope: CoroutineScope,
 ): SendReceive {
 

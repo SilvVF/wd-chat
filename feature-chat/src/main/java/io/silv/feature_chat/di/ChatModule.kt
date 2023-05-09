@@ -9,13 +9,13 @@ import io.silv.feature_chat.ChatViewModel
 import io.silv.feature_chat.repo.WebsocketRepo
 import io.silv.feature_chat.use_case.CollectChatUseCase
 import io.silv.feature_chat.use_case.ConnectToChatUseCase
-import io.silv.feature_chat.use_case.GetGroupInfoUseCase
+import io.silv.feature_chat.use_case.ObserveWifiDirectEventsUseCase
 import io.silv.feature_chat.use_case.SendChatUseCase
 import io.silv.feature_chat.use_case.collectChatUseCaseImpl
 import io.silv.feature_chat.use_case.connectToChatUseCaseImpl
-import io.silv.feature_chat.use_case.getGroupInfoUseCaseImpl
+import io.silv.feature_chat.use_case.observeWifiDirectEventsUseCaseImpl
 import io.silv.feature_chat.use_case.sendChatUseCaseImpl
-import io.silv.wifi_direct.P2p
+import io.silv.wifi_direct.WifiP2pReceiver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 
@@ -26,16 +26,24 @@ object ChatModule {
     @ViewModelScoped
     @Provides
     fun provideChatViewModel(
-        getGroupInfoUseCase: GetGroupInfoUseCase,
+        observeWifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase,
         connectToChatUseCase: ConnectToChatUseCase,
         collectChatUseCase: CollectChatUseCase,
         sendChatUseCase: SendChatUseCase
     ): ChatViewModel = ChatViewModel(
-        getGroupInfoUseCase = getGroupInfoUseCase,
+        observeWifiDirectEventsUseCase = observeWifiDirectEventsUseCase,
         connectToChatUseCase = connectToChatUseCase,
         collectChatUseCase = collectChatUseCase,
         sendChatUseCase = sendChatUseCase
     )
+
+    @ViewModelScoped
+    @Provides
+    fun provideObserveWifiDirectEventsUseCase(
+        receiver: WifiP2pReceiver
+    ) = ObserveWifiDirectEventsUseCase {
+        observeWifiDirectEventsUseCaseImpl(receiver)
+    }
 
     @ViewModelScoped
     @Provides
@@ -58,14 +66,6 @@ object ChatModule {
         websocketRepo: WebsocketRepo
     ) = SendChatUseCase {
         sendChatUseCaseImpl(websocketRepo, it)
-    }
-
-    @ViewModelScoped
-    @Provides
-    fun provideGetGroupInfoUseCase(
-        p2p: P2p
-    ): GetGroupInfoUseCase = GetGroupInfoUseCase {
-        getGroupInfoUseCaseImpl(p2p)
     }
 
     @ViewModelScoped

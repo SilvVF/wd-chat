@@ -23,7 +23,7 @@ fun CreateGroupScreen(
     
     viewModel.collectSideEffect { event ->
         when (event) {
-            CreateGroupEvent.GroupCreated -> navigate()
+            is CreateGroupEvent.GroupCreated -> {  }
             is CreateGroupEvent.ShowToast -> ctx.toast(event.message)
         }
     }

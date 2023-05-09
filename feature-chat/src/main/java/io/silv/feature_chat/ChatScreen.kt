@@ -37,8 +37,12 @@ fun ChatScreen(
     when(state) {
         is ChatUiState.Success -> ChatSuccessScreen(state = state, viewModel = viewModel)
         is ChatUiState.Error -> ChatErrorScreen(
-            retry = { viewModel.startChatServer(isGroupOwner, groupOwnerAddress ) },
-            navigateBack = {}
+            retry = {
+                viewModel.startChatServer(isGroupOwner, groupOwnerAddress)
+            },
+            navigateBack = {
+
+            }
         )
         is ChatUiState.Loading -> ChatLoadingScreen()
     }
@@ -63,6 +67,7 @@ fun ChatErrorScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatSuccessScreen(
     state: ChatUiState.Success,

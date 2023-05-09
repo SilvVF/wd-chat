@@ -7,11 +7,13 @@ import io.silv.ChatMessage
 import io.silv.WsData
 import io.silv.feature_chat.repo.WebsocketRepo
 import io.silv.wifi_direct.P2p
+import io.silv.wifi_direct.WifiP2pEvent
+import io.silv.wifi_direct.WifiP2pReceiver
 import io.silv.wifi_direct.types.P2pError
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 
-private var go = false
-suspend fun sendChatUseCaseImpl(
+internal suspend fun sendChatUseCaseImpl(
     websocketRepo: WebsocketRepo,
     message: String
 ) {
@@ -19,18 +21,17 @@ suspend fun sendChatUseCaseImpl(
         websocketRepo.send(
             ChatMessage(
                 message = message,
-                name = "groupOwner - $go",
+                name = "",
                 address = "0.0.0.0",
             )
         )
     }.onFailure { it.printStackTrace() }
 }
-suspend fun connectToChatUseCaseImpl(
+internal suspend fun connectToChatUseCaseImpl(
     isGroupOwner: Boolean,
     groupOwnerAddress: String,
     websocketRepo: WebsocketRepo
 ): Boolean {
-    go = isGroupOwner
     runCatching {
         websocketRepo.startConnection(
             groupOwner = isGroupOwner,
@@ -43,7 +44,13 @@ suspend fun connectToChatUseCaseImpl(
     return true
 }
 
-fun collectChatUseCaseImpl(
+internal fun observeWifiDirectEventsUseCaseImpl(
+    wifiP2pReceiver: WifiP2pReceiver
+): SharedFlow<WifiP2pEvent> {
+    return wifiP2pReceiver.eventBroadcast
+}
+
+internal fun collectChatUseCaseImpl(
     websocketRepo: WebsocketRepo
 ): Either<Throwable, Flow<WsData>> {
     return Either.catch {
@@ -51,9 +58,3 @@ fun collectChatUseCaseImpl(
     }
 }
 
-
-suspend fun getGroupInfoUseCaseImpl(
-    p2p: P2p
-): Either<P2pError, WifiP2pGroup> {
-    return p2p.requestGroupInfo()
-}

@@ -28,20 +28,22 @@ class ChatWebsocketClient(
     private val mutWsDataFlow = MutableSharedFlow<WsData>()
     override val wsDataFlow = mutWsDataFlow.asSharedFlow()
 
-    private  var session: DefaultWebSocketSession? = null
+    private  var webSocketSession: DefaultWebSocketSession? = null
 
-    fun start() = scope.launch { startClient() }
-
-    private suspend fun startClient() = HttpClient(CIO) {
+    private val httpClient = HttpClient(CIO) {
         install(WebSockets) {
             contentConverter = KotlinxWebsocketSerializationConverter(json)
         }
-    }.webSocket(
+    }
+
+    fun start() = scope.launch { startClient() }
+
+    private suspend fun startClient() = httpClient.webSocket(
         host = address,
         port = serverPort,
         path = "/chat"
     ) {
-        session = this
+        webSocketSession = this
         try {
             while (true) {
                 val data = receiveDeserialized<WsData>()
@@ -50,13 +52,13 @@ class ChatWebsocketClient(
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
-           session = null
+           webSocketSession = null
            cancel()
         }
     }
 
     override suspend fun send(wsData: WsData) {
-        session?.send(
+        webSocketSession?.send(
             Frame.Text(
                 Json.encodeToString(wsData)
             )

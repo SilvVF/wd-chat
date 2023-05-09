@@ -64,7 +64,10 @@ class SearchUsersViewModel @Inject constructor(
                     if (event.p2pInfo.groupFormed) {
                         eventChannel.send(
                             SearchUsersEvent.JoinedGroup(
-                                groupOwnerAddress = event.p2pInfo.groupOwnerAddress.toString(),
+                                groupOwnerAddress = event.p2pInfo
+                                    .groupOwnerAddress
+                                    .toString()
+                                    .replace("/", ""),
                                 isGroupOwner = event.p2pInfo.isGroupOwner
                             )
                         )

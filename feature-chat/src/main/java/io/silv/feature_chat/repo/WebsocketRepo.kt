@@ -3,7 +3,7 @@ package io.silv.feature_chat.repo
 import io.silv.SendReceive
 import io.silv.WsData
 import io.silv.client.ChatWebsocketClient
-import io.silv.server.ChatWebSocketServer
+import io.silv.server.ChatWebsocketServer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -29,7 +29,7 @@ class WebsocketRepo (
         groupOwnerAddress: String,
     ){
         ws = if (groupOwner) {
-           ChatWebSocketServer(scope).also {
+           ChatWebsocketServer(scope).also {
                 val job = it.start()
                 closeActions.add { job.cancel() }
             }

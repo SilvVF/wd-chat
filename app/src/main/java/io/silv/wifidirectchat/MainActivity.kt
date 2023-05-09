@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,25 +47,28 @@ class MainActivity : ComponentActivity() {
         addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
     }
 
+    private val permissions = buildList {
+        add(Manifest.permission.ACCESS_WIFI_STATE)
+        add(Manifest.permission.CHANGE_WIFI_STATE)
+        add(Manifest.permission.ACCESS_FINE_LOCATION)
+        add(Manifest.permission.ACCESS_COARSE_LOCATION)
+        add(Manifest.permission.CHANGE_NETWORK_STATE)
+        add(Manifest.permission.INTERNET)
+        add(Manifest.permission.ACCESS_NETWORK_STATE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            add(Manifest.permission.NEARBY_WIFI_DEVICES)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val permissions = buildList {
-            add(Manifest.permission.ACCESS_WIFI_STATE)
-            add(Manifest.permission.CHANGE_WIFI_STATE)
-            add(Manifest.permission.ACCESS_FINE_LOCATION)
-            add(Manifest.permission.ACCESS_COARSE_LOCATION)
-            add(Manifest.permission.CHANGE_NETWORK_STATE)
-            add(Manifest.permission.INTERNET)
-            add(Manifest.permission.ACCESS_NETWORK_STATE)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                add(Manifest.permission.NEARBY_WIFI_DEVICES)
-        }
 
         setContent {
             WifiDirectChatTheme {
 
                 val navController = rememberNavController()
+                val viewModel = hiltViewModel<MainActivityViewModel>().also {
+                    it.collectWifiEvents()
+                }
 
                 NavHost(
                     navController = navController,
@@ -100,7 +104,7 @@ class MainActivity : ComponentActivity() {
                     composable("next") {
                         SearchUsersScreen { isGroupOwner, groupOwnerAddress ->
                             navController.navigate(
-                                "chat/$isGroupOwner/${groupOwnerAddress.drop(1)}",
+                                "chat/$isGroupOwner/${groupOwnerAddress}",
 
                             )
                         }
@@ -141,13 +145,5 @@ class MainActivity : ComponentActivity() {
         receiver.also { receiver ->
             unregisterReceiver(receiver)
         }
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-  WifiDirectChatTheme {
     }
 }
