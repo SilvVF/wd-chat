@@ -10,10 +10,11 @@ digraph {
   ":feature-chat" [fillcolor="#baffc9"];
   ":feature-create-group" [fillcolor="#baffc9"];
   ":feature-search-users" [fillcolor="#baffc9"];
+  ":image-store" [fillcolor="#baffc9"];
   ":local-database" [fillcolor="#baffc9"];
   ":on-boarding" [fillcolor="#baffc9"];
-  ":server" [fillcolor="#ffb3ba"];
   ":shared-ui-compose" [fillcolor="#baffc9"];
+  ":websockets" [fillcolor="#ffb3ba"];
   ":wifi-direct" [fillcolor="#baffc9"];
 
   {rank = same;}
@@ -31,7 +32,8 @@ digraph {
   ":feature-create-group" -> ":feature-create-group"
   ":feature-chat" -> ":shared-ui-compose"
   ":feature-chat" -> ":wifi-direct"
-  ":feature-chat" -> ":server"
+  ":feature-chat" -> ":websockets"
+  ":feature-chat" -> ":image-store"
   ":feature-chat" -> ":local-database"
   ":feature-chat" -> ":feature-chat"
   ":datastore" -> ":datastore"
@@ -43,4 +45,5 @@ digraph {
   ":on-boarding" -> ":on-boarding"
   ":wifi-direct" -> ":wifi-direct"
   ":local-database" -> ":local-database"
+  ":image-store" -> ":image-store"
 }
