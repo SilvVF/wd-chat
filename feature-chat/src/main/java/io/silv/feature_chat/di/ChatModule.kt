@@ -75,9 +75,10 @@ object ChatModule {
     @ViewModelScoped
     @Provides
     fun provideSendChatUseCase(
-        websocketRepo: WebsocketRepo
-    ) = SendChatUseCase {
-        sendChatUseCaseImpl(websocketRepo, it)
+        websocketRepo: WebsocketRepo,
+        imageRepository: ImageRepository
+    ) = SendChatUseCase { message, uris ->
+        sendChatUseCaseImpl(websocketRepo, imageRepository, message, uris)
     }
 
     @ViewModelScoped
