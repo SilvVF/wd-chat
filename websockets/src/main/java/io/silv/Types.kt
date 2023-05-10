@@ -7,10 +7,8 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import java.io.Serial
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.time.temporal.TemporalField
 
 @Serializable
 sealed class WsData(
@@ -24,6 +22,7 @@ data class ChatMessage(
     val message: String,
     val name: String,
     val address: String,
+    val images: List<Image> = emptyList()
 ): WsData() {
 
     companion object {
@@ -35,8 +34,6 @@ data class ChatMessage(
 @SerialName(Image.typeName)
 data class Image(
     val data: ByteArray,
-    val name: String,
-
 ): WsData() {
 
     companion object {
@@ -50,15 +47,12 @@ data class Image(
         other as Image
 
         if (!data.contentEquals(other.data)) return false
-        if (name != other.name) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = data.contentHashCode()
-        result = 31 * result + name.hashCode()
-        return result
+        return data.contentHashCode()
     }
 }
 

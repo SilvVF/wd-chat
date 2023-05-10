@@ -2,6 +2,7 @@ package io.silv.image_store
 
 import android.content.Context
 import android.net.Uri
+import java.io.File
 
 interface ImageRepository {
 
@@ -20,6 +21,8 @@ interface ImageRepository {
     suspend fun deleteAll(uris: List<Uri>) = uris.map { delete(it) }.all { true }
 
     suspend fun clear(): Boolean
+
+    suspend fun getFileFromUri(uri: Uri): File?
 
     companion object {
         fun getImpl(context: Context): ImageRepository =

@@ -1,7 +1,6 @@
 package io.silv.image_store
 
 import android.content.Context
-import android.media.Image
 import android.net.Uri
 import android.util.Log
 import android.webkit.MimeTypeMap
@@ -100,7 +99,12 @@ internal class ImageRepositoryImpl(
         return true
     }
 
-
+    override suspend fun getFileFromUri(uri: Uri): File? {
+        return dir.listFiles { file ->
+            getUriFromFile(file) == uri
+        }
+            ?.firstOrNull()
+    }
     private fun getUriFromFile(file: File): Uri =
         FileProvider.getUriForFile(context, fileProviderAuthority, file)
 
