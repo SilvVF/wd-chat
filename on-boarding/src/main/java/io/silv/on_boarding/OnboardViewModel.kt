@@ -1,15 +1,13 @@
 package io.silv.on_boarding
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import android.Manifest
+import android.os.Build
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.silv.datastore.EncryptedDatastore
 import io.silv.shared_ui.utils.EventViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
@@ -28,6 +26,18 @@ class OnboardViewModel @Inject constructor(
     private val passcodeError = MutableStateFlow(false)
     private val nameError = MutableStateFlow(false)
     private val permissionError = MutableStateFlow(false)
+
+    val permissions = buildList {
+        add(Manifest.permission.ACCESS_WIFI_STATE)
+        add(Manifest.permission.CHANGE_WIFI_STATE)
+        add(Manifest.permission.ACCESS_FINE_LOCATION)
+        add(Manifest.permission.ACCESS_COARSE_LOCATION)
+        add(Manifest.permission.CHANGE_NETWORK_STATE)
+        add(Manifest.permission.INTERNET)
+        add(Manifest.permission.ACCESS_NETWORK_STATE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            add(Manifest.permission.NEARBY_WIFI_DEVICES)
+    }
 
     private val errors = combine(
         passcodeError,

@@ -7,10 +7,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ViewModelScoped
 import dagger.hilt.components.SingletonComponent
-import io.silv.datastore.EncryptedDatastore
-import io.silv.on_boarding.OnboardViewModel
 import io.silv.wifi_direct.WifiP2pReceiver
 import io.silv.wifidirectchat.MainActivityViewModel
 import io.silv.wifidirectchat.use_case.ObserveWifiDirectEventsUseCase
@@ -22,16 +19,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
-    @Provides
-    @Singleton
-    fun provideOnboardViewModel(
-        encryptedDatastore: EncryptedDatastore
-    ): OnboardViewModel = OnboardViewModel(
-        datastore = encryptedDatastore
-    )
-
-
     @Provides
     @Singleton
     fun provideWifiP2pManager(
@@ -48,7 +35,7 @@ object AppModule {
     )
 
     @Provides
-    @ViewModelScoped
+    @Singleton
     fun provideObserveWifiDirectEventsUseCase(
         receiver: WifiP2pReceiver
     ) = ObserveWifiDirectEventsUseCase {
@@ -56,7 +43,7 @@ object AppModule {
     }
 
     @Provides
-    @ViewModelScoped
+    @Singleton
     fun provideMainActivityViewModel(
         observeWifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase
     ): MainActivityViewModel {

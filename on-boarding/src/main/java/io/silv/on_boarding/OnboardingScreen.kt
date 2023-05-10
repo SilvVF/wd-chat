@@ -10,7 +10,6 @@ import io.silv.shared_ui.utils.collectSideEffect
 @Composable
 fun OnboardScreen(
     viewModel: OnboardViewModel,
-    permissionsToRequest: List<String>,
     onDone: () -> Unit
 ) {
 
@@ -23,7 +22,7 @@ fun OnboardScreen(
     val state by viewModel.state.collectAsState()
 
     when(state.currentScreen) {
-      1 -> PermissionsScreen(permissions = permissionsToRequest) {
+      1 -> PermissionsScreen(permissions = viewModel.permissions) {
           viewModel.onPermissionsAccepted()
       }
       2 -> UserPreferencesScreen(
