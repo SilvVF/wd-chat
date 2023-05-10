@@ -17,7 +17,6 @@ class MainActivityViewModel(
 
     var onboarded by mutableStateOf(false)
 
-
     fun collectWifiEvents() = viewModelScope.launch {
             observeWifiDirectEventsUseCase().collect { event ->
                 logEvent(event)

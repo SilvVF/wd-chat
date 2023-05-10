@@ -1,11 +1,13 @@
 package io.silv.feature_chat
 
+import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.silv.feature_chat.use_case.CollectChatUseCase
 import io.silv.feature_chat.use_case.ConnectToChatUseCase
 import io.silv.feature_chat.use_case.ObserveWifiDirectEventsUseCase
 import io.silv.feature_chat.use_case.SendChatUseCase
+import io.silv.image_store.ImageRepository
 import io.silv.shared_ui.utils.EventViewModel
 import io.silv.wifi_direct.WifiP2pEvent
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,19 +23,25 @@ class ChatViewModel @Inject constructor(
     observeWifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase,
     private val connectToChatUseCase: ConnectToChatUseCase,
     private val collectChatUseCase: CollectChatUseCase,
-    private val sendChatUseCase: SendChatUseCase
+    private val sendChatUseCase: SendChatUseCase,
+    private val imageStore: ImageRepository
 ): EventViewModel<ChatEvent>() {
 
     private val mutableChatFlow = MutableStateFlow(emptyList<String>())
     private val serverConnected = MutableStateFlow<Boolean?>(null)
+    private val imageAttachments = MutableStateFlow(emptyList<Uri>())
 
     val chatUiState = combine(
         mutableChatFlow,
-        serverConnected
-    ) { chats, serverConnected ->
+        serverConnected,
+        imageAttachments
+    ) { chats, serverConnected, attachments ->
         when (serverConnected) {
             null -> ChatUiState.Loading
-            true -> ChatUiState.Success(chats)
+            true -> ChatUiState.Success(
+                messages = chats,
+                imageAttachments = attachments
+            )
             false -> ChatUiState.Error
         }
     }
@@ -51,6 +59,13 @@ class ChatViewModel @Inject constructor(
                     else -> Unit
                 }
             }
+        }
+    }
+
+    fun onReceivedContent(uri: Uri) = viewModelScope.launch {
+        val localUri = imageStore.write(uri)
+        imageAttachments.getAndUpdate {
+            it + localUri
         }
     }
 
@@ -84,7 +99,8 @@ class ChatViewModel @Inject constructor(
 sealed class ChatUiState {
     object Loading: ChatUiState()
     data class Success(
-        val messages: List<String> = emptyList()
+        val messages: List<String> = emptyList(),
+        val imageAttachments: List<Uri> = emptyList()
     ): ChatUiState()
 
     object Error: ChatUiState()

@@ -66,9 +66,6 @@ class MainActivity : ComponentActivity() {
             WifiDirectChatTheme {
 
                 val navController = rememberNavController()
-                val viewModel = hiltViewModel<MainActivityViewModel>().also {
-                    it.collectWifiEvents()
-                }
 
                 NavHost(
                     navController = navController,

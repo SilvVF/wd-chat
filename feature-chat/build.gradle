@@ -55,8 +55,9 @@ dependencies {
 
     api(
             project(":shared-ui-compose"),
-            project(":wifi-direct"), project(':websockets',)
-            ,
+            project(":wifi-direct"),
+            project(':websockets'),
+            project(':image-store'),
             project(":local-database")
     )
 
