@@ -92,7 +92,7 @@ class ChatViewModel @Inject constructor(
     }
 
     fun sendChat(message: String) = viewModelScope.launch {
-        sendChatUseCase(message)
+        sendChatUseCase(message, imageAttachments.value)
     }
 }
 
