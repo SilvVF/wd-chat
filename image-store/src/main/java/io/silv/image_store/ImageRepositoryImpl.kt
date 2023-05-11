@@ -15,7 +15,6 @@ import java.util.UUID
 
 internal class ImageRepositoryImpl(
     private val context: Context,
-    private val dirName: String,
 ): ImageRepository {
 
     private val fileProviderAuthority = "io.silv.image_store.chat_attachments.fileprovider"
@@ -23,7 +22,7 @@ internal class ImageRepositoryImpl(
     private val typeMap = MimeTypeMap.getSingleton()
     private val cr = context.contentResolver
 
-    private val dir = File(context.filesDir, dirName)
+    private val dir = File(context.filesDir, "chat_attachments")
 
     private val mutex = Mutex()
 
@@ -45,7 +44,7 @@ internal class ImageRepositoryImpl(
     override suspend fun write(uri: Uri): Uri  {
         mutex.tryLock()
         val ext = getExtFromUri(uri)
-        val fileName = "$dirName-${UUID.randomUUID()}.$ext"
+        val fileName = "chat_attachments-${UUID.randomUUID()}.$ext"
         val attachment = File(dir, fileName)
         dir.mkdirs()
         cr.openInputStream(uri).use { stream ->
@@ -59,18 +58,24 @@ internal class ImageRepositoryImpl(
         }
     }
 
-    override suspend fun write(byteArray: ByteArray, ext: String): Uri {
+    override suspend fun writeChat(byteArray: ByteArray, ext: String): Uri {
         mutex.tryLock()
-        val fileName = "$dirName-${UUID.randomUUID()}.$ext"
+        val fileName = "chat_attachments-${UUID.randomUUID()}.$ext"
         val image = File(dir, fileName)
         dir.mkdirs()
         image.writeBytes(byteArray)
         return getUriFromFile(image).also {
             runCatching { mutex.unlock() }
-            Log.d("IMAGE_REPOSITORY", "saved content from ByteArray ext:$ext, new uri $it")
+            Log.d("IMAGE_REPOSITORY", "saved chat content from ByteArray ext:$ext, new uri $it")
         }
     }
 
+    override suspend fun deleteChats(uri: List<Uri>) {
+        val files = dir.listFiles { file -> getUriFromFile(file) == uri } ?: emptyArray()
+        for (file in files) {
+            file.delete()
+        }
+    }
 
     /**
      * Reads all [Uri]'s in the File Storage.

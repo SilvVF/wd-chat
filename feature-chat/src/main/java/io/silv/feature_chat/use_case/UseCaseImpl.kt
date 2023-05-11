@@ -5,6 +5,8 @@ import arrow.core.Either
 import io.silv.ChatMessage
 import io.silv.Image
 import io.silv.feature_chat.repo.WebsocketRepo
+import io.silv.feature_chat.types.MyChat
+import io.silv.feature_chat.types.UiChat
 import io.silv.feature_chat.types.UiWsData
 import io.silv.feature_chat.types.toDomain
 import io.silv.image_store.ImageRepository
@@ -18,12 +20,19 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
+internal suspend fun writeToAttachmentsUseCaseImpl(
+    ir: ImageRepository,
+    uri: Uri
+): Uri {
+    return ir.write(uri)
+}
+
 internal suspend fun sendChatUseCaseImpl(
     websocketRepo: WebsocketRepo,
     ir: ImageRepository,
     message: String,
     uris: List<Uri>
-) {
+): MyChat {
     val images = withContext(Dispatchers.IO) {
         uris.map {
             async {
@@ -38,15 +47,15 @@ internal suspend fun sendChatUseCaseImpl(
                 Image(data = bytes, ext = ext)
             }
     }
+    val chat = ChatMessage(
+        message = message,
+        images = images,
+        sender = "name",
+    )
     runCatching {
-        websocketRepo.send(
-            ChatMessage(
-                message = message,
-                images = images,
-                sender = "name",
-            )
-        )
+        websocketRepo.send(chat)
     }.onFailure { it.printStackTrace() }
+    return MyChat(message,  uris)
 }
 internal suspend fun connectToChatUseCaseImpl(
     isGroupOwner: Boolean,
@@ -79,7 +88,7 @@ internal fun collectChatUseCaseImpl(
     return Either.catch {
         websocketRepo.getReceiveFlow().map {
             it.toDomain { bytes, ext ->
-                imageRepository.write(bytes, ext)
+                imageRepository.writeChat(bytes, ext)
             }
         }
     }

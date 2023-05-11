@@ -4,7 +4,6 @@ import android.net.Uri
 import io.silv.ChatMessage
 import io.silv.UserInfo
 import io.silv.WsData
-import java.time.LocalDateTime
 
 
 suspend fun WsData.toDomain(
@@ -15,7 +14,7 @@ suspend fun WsData.toDomain(
                 message = this.message,
                 sender = this.sender,
                 images = this.images.map { byteArrayToUri(it.data, it.ext) },
-                date = this.date,
+//                date = this.date,
                 id = this.id
             )
         }
@@ -28,19 +27,24 @@ suspend fun WsData.toDomain(
         }
     }
 
+sealed interface Chat
+
 sealed class UiWsData(
     open val id: String
 )
-
 
 data class UiChat(
     val message: String,
     val sender: String,
     val images: List<Uri>,
-    val date: LocalDateTime,
+//    val date: LocalDateTime,
     override val id: String,
-): UiWsData(id)
+): UiWsData(id), Chat
 
+data class MyChat(
+    val message: String,
+    val images: List<Uri>
+): UiWsData("me"), Chat
 
 data class UiUserInfo(
     val name: String,

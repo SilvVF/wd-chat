@@ -10,12 +10,15 @@ interface ImageRepository {
 
     suspend fun write(uri: Uri): Uri
 
-    suspend fun write(byteArray: ByteArray, ext: String): Uri
+    suspend fun writeChat(byteArray: ByteArray, ext: String): Uri
+
     suspend fun writeAll(vararg uris: Uri) = uris.map { uri -> write(uri) }
 
     suspend fun writeAll(uris: List<Uri>) = uris.map { uri -> write(uri) }
 
     suspend fun delete(uri: Uri): Boolean
+
+    suspend fun deleteChats(uri: List<Uri>)
 
     suspend fun deleteAll(vararg uris: Uri) = uris.map { delete(it) }.all { true }
 
@@ -29,6 +32,6 @@ interface ImageRepository {
 
     companion object {
         fun getImpl(context: Context): ImageRepository =
-            ImageRepositoryImpl(context, "chat_attachments")
+            ImageRepositoryImpl(context)
     }
 }

@@ -3,6 +3,7 @@ package io.silv.feature_chat.repo
 import io.silv.SendReceive
 import io.silv.WsData
 import io.silv.client.ChatWebsocketClient
+import io.silv.image_store.ImageRepository
 import io.silv.server.ChatWebsocketServer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -11,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class WebsocketRepo (
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
 ) {
 
     private  var ws: SendReceive? = null

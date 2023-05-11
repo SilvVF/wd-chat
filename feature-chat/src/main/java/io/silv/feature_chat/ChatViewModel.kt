@@ -3,12 +3,15 @@ package io.silv.feature_chat
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.silv.UserInfo
+import io.silv.feature_chat.types.Chat
+import io.silv.feature_chat.types.MyChat
+import io.silv.feature_chat.types.UiChat
+import io.silv.feature_chat.types.UiUserInfo
 import io.silv.feature_chat.use_case.CollectChatUseCase
 import io.silv.feature_chat.use_case.ConnectToChatUseCase
 import io.silv.feature_chat.use_case.ObserveWifiDirectEventsUseCase
 import io.silv.feature_chat.use_case.SendChatUseCase
-import io.silv.image_store.ImageRepository
+import io.silv.feature_chat.use_case.WriteToAttachmentsUseCase
 import io.silv.shared_ui.utils.EventViewModel
 import io.silv.wifi_direct.WifiP2pEvent
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,29 +28,36 @@ class ChatViewModel @Inject constructor(
     private val connectToChatUseCase: ConnectToChatUseCase,
     private val collectChatUseCase: CollectChatUseCase,
     private val sendChatUseCase: SendChatUseCase,
-    private val imageStore: ImageRepository
+    private val writeToAttachmentsUseCase: WriteToAttachmentsUseCase,
 ): EventViewModel<ChatEvent>() {
 
-    private val mutableChatFlow = MutableStateFlow(emptyList<String>())
+    private val mutableChatFlow = MutableStateFlow(emptyList<Chat>())
     private val serverConnected = MutableStateFlow<Boolean?>(null)
     private val imageAttachments = MutableStateFlow(emptyList<Uri>())
-    private val otherUsers = MutableStateFlow<List<UserInfo>>(emptyList())
+    private val users = MutableStateFlow<List<UiUserInfo>>(emptyList())
+    private val message = MutableStateFlow<String>("")
+
 
     val chatUiState = combine(
         mutableChatFlow,
         serverConnected,
-        imageAttachments
-    ) { chats, serverConnected, attachments ->
+        imageAttachments,
+        users,
+        message
+    ) { chats, serverConnected, attachments, users, message ->
         when (serverConnected) {
             null -> ChatUiState.Loading
             true -> ChatUiState.Success(
-                messages = chats,
-                imageAttachments = attachments
+                chats = chats,
+                imageAttachments = attachments,
+                users = users,
+                message = message
             )
             false -> ChatUiState.Error
         }
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), ChatUiState.Loading)
+
     init {
         viewModelScope.launch {
             observeWifiDirectEventsUseCase().collect { event ->
@@ -64,8 +74,12 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    fun handleMessageChanged(text: String) = viewModelScope.launch {
+        message.emit(text)
+    }
+
     fun onReceivedContent(uri: Uri) = viewModelScope.launch {
-        val localUri = imageStore.write(uri)
+        val localUri = writeToAttachmentsUseCase(uri)
         imageAttachments.getAndUpdate {
             it + localUri
         }
@@ -82,8 +96,18 @@ class ChatViewModel @Inject constructor(
     private fun startCollectingChat() = viewModelScope.launch {
         collectChatUseCase().onRight { wsData ->
             wsData.collect { data ->
-                mutableChatFlow.getAndUpdate { list ->
-                    list + data.toString()
+                when (data) {
+                    is UiChat -> mutableChatFlow.getAndUpdate { list ->
+                        list + data
+                    }
+                    is MyChat -> {
+                        mutableChatFlow.getAndUpdate { it + data }
+                    }
+                    is UiUserInfo -> {
+                        users.getAndUpdate {users ->
+                            users + data
+                        }
+                    }
                 }
             }
         }.onLeft {
@@ -94,15 +118,20 @@ class ChatViewModel @Inject constructor(
     }
 
     fun sendChat(message: String) = viewModelScope.launch {
-        sendChatUseCase(message, imageAttachments.value)
+        val chat = sendChatUseCase(message, imageAttachments.value)
+        mutableChatFlow.getAndUpdate { list ->
+            list + chat
+        }
     }
 }
 
 sealed class ChatUiState {
     object Loading: ChatUiState()
     data class Success(
-        val messages: List<String> = emptyList(),
-        val imageAttachments: List<Uri> = emptyList()
+        val chats: List<Chat> = emptyList(),
+        val imageAttachments: List<Uri> = emptyList(),
+        val users: List<UiUserInfo>,
+        val message: String
     ): ChatUiState()
 
     object Error: ChatUiState()

@@ -15,8 +15,8 @@ private val userId: String = UUID.randomUUID().toString()
 
 @Serializable
 sealed class WsData(
-    @Serializable(LocalDateTimeSerializer::class)
-    val date: LocalDateTime = LocalDateTime.now(),
+//    @Serializable(LocalDateTimeSerializer::class)
+//    val date: LocalDateTime = LocalDateTime.now(),
     val id: String = userId
 )
 

@@ -2,6 +2,8 @@ package io.silv.feature_chat.use_case
 
 import android.net.Uri
 import arrow.core.Either
+import io.silv.feature_chat.types.MyChat
+import io.silv.feature_chat.types.UiChat
 import io.silv.feature_chat.types.UiWsData
 import io.silv.wifi_direct.WifiP2pEvent
 import kotlinx.coroutines.flow.Flow
@@ -11,5 +13,9 @@ import kotlinx.coroutines.flow.SharedFlow
 fun interface ConnectToChatUseCase: suspend (Boolean, String) -> Boolean
 
 fun interface ObserveWifiDirectEventsUseCase: () -> SharedFlow<WifiP2pEvent>
-fun interface SendChatUseCase: suspend (String, List<Uri>) -> Unit
+
+fun interface SendChatUseCase: suspend (String, List<Uri>) -> MyChat
+
 fun interface CollectChatUseCase: () -> Either<Throwable, Flow<UiWsData>>
+
+fun interface WriteToAttachmentsUseCase: suspend (Uri) -> Uri

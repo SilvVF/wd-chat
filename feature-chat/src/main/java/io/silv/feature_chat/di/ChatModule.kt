@@ -13,10 +13,12 @@ import io.silv.feature_chat.use_case.CollectChatUseCase
 import io.silv.feature_chat.use_case.ConnectToChatUseCase
 import io.silv.feature_chat.use_case.ObserveWifiDirectEventsUseCase
 import io.silv.feature_chat.use_case.SendChatUseCase
+import io.silv.feature_chat.use_case.WriteToAttachmentsUseCase
 import io.silv.feature_chat.use_case.collectChatUseCaseImpl
 import io.silv.feature_chat.use_case.connectToChatUseCaseImpl
 import io.silv.feature_chat.use_case.observeWifiDirectEventsUseCaseImpl
 import io.silv.feature_chat.use_case.sendChatUseCaseImpl
+import io.silv.feature_chat.use_case.writeToAttachmentsUseCaseImpl
 import io.silv.image_store.ImageRepository
 import io.silv.wifi_direct.WifiP2pReceiver
 import kotlinx.coroutines.CoroutineScope
@@ -33,13 +35,14 @@ object ChatModule {
         connectToChatUseCase: ConnectToChatUseCase,
         collectChatUseCase: CollectChatUseCase,
         sendChatUseCase: SendChatUseCase,
+        writeToAttachmentsUseCase: WriteToAttachmentsUseCase,
         imageRepository: ImageRepository
     ): ChatViewModel = ChatViewModel(
         observeWifiDirectEventsUseCase = observeWifiDirectEventsUseCase,
         connectToChatUseCase = connectToChatUseCase,
         collectChatUseCase = collectChatUseCase,
         sendChatUseCase = sendChatUseCase,
-        imageStore = imageRepository
+        writeToAttachmentsUseCase = writeToAttachmentsUseCase
     )
 
     @ViewModelScoped
@@ -58,10 +61,19 @@ object ChatModule {
 
     @ViewModelScoped
     @Provides
+    fun provideWriteToAttachmentsUseCase(
+        imageRepository: ImageRepository
+    ) = WriteToAttachmentsUseCase {
+        writeToAttachmentsUseCaseImpl(imageRepository, it)
+    }
+
+    @ViewModelScoped
+    @Provides
     fun provideCollectChatUseCase(
-        websocketRepo: WebsocketRepo
+        websocketRepo: WebsocketRepo,
+        imageRepository: ImageRepository
     ) = CollectChatUseCase {
-        collectChatUseCaseImpl(websocketRepo)
+        collectChatUseCaseImpl(websocketRepo, imageRepository)
     }
 
     @ViewModelScoped
