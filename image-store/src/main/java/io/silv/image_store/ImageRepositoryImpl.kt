@@ -31,6 +31,9 @@ internal class ImageRepositoryImpl(
         CoroutineScope(Dispatchers.IO).launch { clear() }
     }
 
+    override fun getExtFromUri(uri: Uri) =
+        typeMap.getExtensionFromMimeType(cr.getType(uri)) ?: ""
+
     /**
      * @throws
      * Locks [mutex] while performing the write operation other methods in the [ImageRepository]
@@ -41,9 +44,7 @@ internal class ImageRepositoryImpl(
      */
     override suspend fun write(uri: Uri): Uri  {
         mutex.tryLock()
-        val ext = typeMap.getExtensionFromMimeType(
-            cr.getType(uri)
-        )
+        val ext = getExtFromUri(uri)
         val fileName = "$dirName-${UUID.randomUUID()}.$ext"
         val attachment = File(dir, fileName)
         dir.mkdirs()
@@ -57,6 +58,19 @@ internal class ImageRepositoryImpl(
             Log.d("IMAGE_REPOSITORY", "saved content original uri $uri, new uri $it")
         }
     }
+
+    override suspend fun write(byteArray: ByteArray, ext: String): Uri {
+        mutex.tryLock()
+        val fileName = "$dirName-${UUID.randomUUID()}.$ext"
+        val image = File(dir, fileName)
+        dir.mkdirs()
+        image.writeBytes(byteArray)
+        return getUriFromFile(image).also {
+            runCatching { mutex.unlock() }
+            Log.d("IMAGE_REPOSITORY", "saved content from ByteArray ext:$ext, new uri $it")
+        }
+    }
+
 
     /**
      * Reads all [Uri]'s in the File Storage.

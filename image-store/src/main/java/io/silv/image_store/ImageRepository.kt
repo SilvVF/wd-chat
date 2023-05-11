@@ -10,6 +10,7 @@ interface ImageRepository {
 
     suspend fun write(uri: Uri): Uri
 
+    suspend fun write(byteArray: ByteArray, ext: String): Uri
     suspend fun writeAll(vararg uris: Uri) = uris.map { uri -> write(uri) }
 
     suspend fun writeAll(uris: List<Uri>) = uris.map { uri -> write(uri) }
@@ -21,6 +22,8 @@ interface ImageRepository {
     suspend fun deleteAll(uris: List<Uri>) = uris.map { delete(it) }.all { true }
 
     suspend fun clear(): Boolean
+
+    fun getExtFromUri(uri: Uri): String
 
     suspend fun getFileFromUri(uri: Uri): File?
 

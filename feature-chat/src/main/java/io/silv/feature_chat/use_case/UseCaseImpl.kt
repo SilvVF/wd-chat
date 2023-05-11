@@ -4,9 +4,9 @@ import android.net.Uri
 import arrow.core.Either
 import io.silv.ChatMessage
 import io.silv.Image
-
-import io.silv.WsData
 import io.silv.feature_chat.repo.WebsocketRepo
+import io.silv.feature_chat.types.UiWsData
+import io.silv.feature_chat.types.toDomain
 import io.silv.image_store.ImageRepository
 import io.silv.wifi_direct.WifiP2pEvent
 import io.silv.wifi_direct.WifiP2pReceiver
@@ -15,31 +15,35 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 internal suspend fun sendChatUseCaseImpl(
     websocketRepo: WebsocketRepo,
-    imageRepository: ImageRepository,
+    ir: ImageRepository,
     message: String,
     uris: List<Uri>
 ) {
     val images = withContext(Dispatchers.IO) {
         uris.map {
-            async { imageRepository.getFileFromUri(it) }
+            async {
+                ir.getFileFromUri(it) to ir.getExtFromUri(it)
+            }
         }
             .awaitAll()
-            .mapNotNull { file -> file?.readBytes() }
-            .map { bytes ->
-                Image(data = bytes,)
+            .mapBothNotNull { (file, ext) ->
+                file?.readBytes() to ext
+            }
+            .map { (bytes, ext) ->
+                Image(data = bytes, ext = ext)
             }
     }
     runCatching {
         websocketRepo.send(
             ChatMessage(
                 message = message,
-                name = "",
-                address = "0.0.0.0",
-                images = images
+                images = images,
+                sender = "name",
             )
         )
     }.onFailure { it.printStackTrace() }
@@ -68,10 +72,25 @@ internal fun observeWifiDirectEventsUseCaseImpl(
 }
 
 internal fun collectChatUseCaseImpl(
-    websocketRepo: WebsocketRepo
-): Either<Throwable, Flow<WsData>> {
+    websocketRepo: WebsocketRepo,
+    imageRepository: ImageRepository
+): Either<Throwable, Flow<UiWsData>> {
+
     return Either.catch {
-        websocketRepo.getReceiveFlow()
+        websocketRepo.getReceiveFlow().map {
+            it.toDomain { bytes, ext ->
+                imageRepository.write(bytes, ext)
+            }
+        }
     }
 }
 
+fun <T, T2, R, R2>  List<Pair<T, T2>>.mapBothNotNull(transform: (Pair<T, T2>) -> Pair<R?, R2?>): List<Pair<R, R2>> {
+    return this.mapNotNull {
+        val (x, y) = transform(it)
+        if (x == null || y == null)
+            return@mapNotNull null
+        else
+            x to y
+    }
+}

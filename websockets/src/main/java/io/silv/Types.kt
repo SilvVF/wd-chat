@@ -9,19 +9,22 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.util.UUID
+
+private val userId: String = UUID.randomUUID().toString()
 
 @Serializable
 sealed class WsData(
     @Serializable(LocalDateTimeSerializer::class)
-    val date: LocalDateTime = LocalDateTime.now()
+    val date: LocalDateTime = LocalDateTime.now(),
+    val id: String = userId
 )
 
 @Serializable
 @SerialName(ChatMessage.typeName)
 data class ChatMessage(
     val message: String,
-    val name: String,
-    val address: String,
+    val sender: String,
     val images: List<Image> = emptyList()
 ): WsData() {
 
@@ -34,8 +37,8 @@ data class ChatMessage(
 @SerialName(Image.typeName)
 data class Image(
     val data: ByteArray,
-): WsData() {
-
+    val ext: String
+) {
     companion object {
         const val typeName = "image"
     }
@@ -56,9 +59,16 @@ data class Image(
     }
 }
 
-
-
-
+@Serializable
+@SerialName(UserInfo.typeName)
+data class UserInfo(
+    val name: String,
+    val icon: Image
+): WsData() {
+    companion object {
+        const val typeName = "user"
+    }
+}
 
 
 object LocalDateTimeSerializer : KSerializer<LocalDateTime> {

@@ -3,6 +3,7 @@ package io.silv.feature_chat
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.silv.UserInfo
 import io.silv.feature_chat.use_case.CollectChatUseCase
 import io.silv.feature_chat.use_case.ConnectToChatUseCase
 import io.silv.feature_chat.use_case.ObserveWifiDirectEventsUseCase
@@ -30,6 +31,7 @@ class ChatViewModel @Inject constructor(
     private val mutableChatFlow = MutableStateFlow(emptyList<String>())
     private val serverConnected = MutableStateFlow<Boolean?>(null)
     private val imageAttachments = MutableStateFlow(emptyList<Uri>())
+    private val otherUsers = MutableStateFlow<List<UserInfo>>(emptyList())
 
     val chatUiState = combine(
         mutableChatFlow,
