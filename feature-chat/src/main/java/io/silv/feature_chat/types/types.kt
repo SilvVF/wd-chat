@@ -1,9 +1,11 @@
 package io.silv.feature_chat.types
 
 import android.net.Uri
+import androidx.compose.runtime.Immutable
 import io.silv.ChatMessage
 import io.silv.UserInfo
 import io.silv.WsData
+import java.time.LocalDateTime
 
 
 suspend fun WsData.toDomain(
@@ -11,10 +13,12 @@ suspend fun WsData.toDomain(
 ): UiWsData = when (this) {
         is ChatMessage -> {
             UiChat(
-                message = this.message,
-                sender = this.sender,
-                images = this.images.map { byteArrayToUri(it.data, it.ext) },
-//                date = this.date,
+                message = Message(
+                    author = this.sender,
+                    content = this.message,
+                    images = this.images.map { byteArrayToUri(it.data, it.ext) },
+                    authorId = this.id
+                ),
                 id = this.id
             )
         }
@@ -27,23 +31,32 @@ suspend fun WsData.toDomain(
         }
     }
 
-sealed interface Chat
+interface Chat {
+    val message: Message
+}
+
+@Immutable
+data class Message(
+    val author: String,
+    val authorId: String,
+    val content: String,
+    val timestamp: String = LocalDateTime.now().toString(),
+    val images: List<Uri> = emptyList(),
+)
+
 
 sealed class UiWsData(
     open val id: String
 )
 
 data class UiChat(
-    val message: String,
-    val sender: String,
-    val images: List<Uri>,
+    override val message: Message,
 //    val date: LocalDateTime,
     override val id: String,
 ): UiWsData(id), Chat
 
 data class MyChat(
-    val message: String,
-    val images: List<Uri>
+    override val message: Message,
 ): UiWsData("me"), Chat
 
 data class UiUserInfo(

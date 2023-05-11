@@ -5,6 +5,7 @@ import arrow.core.Either
 import io.silv.ChatMessage
 import io.silv.Image
 import io.silv.feature_chat.repo.WebsocketRepo
+import io.silv.feature_chat.types.Message
 import io.silv.feature_chat.types.MyChat
 import io.silv.feature_chat.types.UiChat
 import io.silv.feature_chat.types.UiWsData
@@ -55,7 +56,14 @@ internal suspend fun sendChatUseCaseImpl(
     runCatching {
         websocketRepo.send(chat)
     }.onFailure { it.printStackTrace() }
-    return MyChat(message,  uris)
+    return MyChat(
+        message = Message(
+            author = "me",
+            content = message,
+            images = uris,
+            authorId = "me"
+        )
+    )
 }
 internal suspend fun connectToChatUseCaseImpl(
     isGroupOwner: Boolean,

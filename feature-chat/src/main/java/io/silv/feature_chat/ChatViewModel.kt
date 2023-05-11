@@ -14,12 +14,14 @@ import io.silv.feature_chat.use_case.SendChatUseCase
 import io.silv.feature_chat.use_case.WriteToAttachmentsUseCase
 import io.silv.shared_ui.utils.EventViewModel
 import io.silv.wifi_direct.WifiP2pEvent
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,7 +36,7 @@ class ChatViewModel @Inject constructor(
     private val mutableChatFlow = MutableStateFlow(emptyList<Chat>())
     private val serverConnected = MutableStateFlow<Boolean?>(null)
     private val imageAttachments = MutableStateFlow(emptyList<Uri>())
-    private val users = MutableStateFlow<List<UiUserInfo>>(emptyList())
+    private val users = MutableStateFlow<Map<String, UiUserInfo>>(emptyMap())
     private val message = MutableStateFlow<String>("")
 
 
@@ -90,6 +92,13 @@ class ChatViewModel @Inject constructor(
             serverConnected.emit(connected)
             if (connected) {
                 startCollectingChat()
+                launch {
+                    delay(4000)
+                    while (true) {
+                        delay(2000)
+                        sendChat("Hello ${UUID.randomUUID()}")
+                    }
+                }
             }
         }
     }
@@ -104,8 +113,13 @@ class ChatViewModel @Inject constructor(
                         mutableChatFlow.getAndUpdate { it + data }
                     }
                     is UiUserInfo -> {
-                        users.getAndUpdate {users ->
-                            users + data
+                        users.getAndUpdate { users ->
+                            buildMap {
+                                users.forEach { (k, v) ->
+                                    this[k] = v
+                                }
+                                this[data.id] = data
+                            }
                         }
                     }
                 }
@@ -130,7 +144,7 @@ sealed class ChatUiState {
     data class Success(
         val chats: List<Chat> = emptyList(),
         val imageAttachments: List<Uri> = emptyList(),
-        val users: List<UiUserInfo>,
+        val users: Map<String, UiUserInfo>,
         val message: String
     ): ChatUiState()
 
