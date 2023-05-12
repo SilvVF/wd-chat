@@ -54,27 +54,25 @@ fun RichContentEditText(
             rest
         }
     }
-
     AndroidView(
-        modifier = modifier,
-        factory = { ctx ->
-            EditText(ctx).apply {
-                editTextBlock()
-                setText(text)
-                ViewCompat.setOnReceiveContentListener(
-                   this, arrayOf("image/*", "video/*"), listener
-                )
-                addTextChangedListener {
-                    onTextChange(it.toString())
+            modifier = modifier,
+            factory = { ctx ->
+                EditText(ctx).apply {
+                    editTextBlock()
+                    ViewCompat.setOnReceiveContentListener(
+                        this, arrayOf("image/*", "video/*"), listener
+                    )
+                    addTextChangedListener {
+                        onTextChange(it.toString())
+                    }
+                }
+            },
+            update = { view ->
+                if (text != view.text.toString()) {
+                    view.setText(text)
                 }
             }
-        },
-        update = { view ->
-           if (text != view.text.toString()) {
-               view.setText(text)
-           }
-        }
-    )
+        )
 }
 
 val Int.px: Int

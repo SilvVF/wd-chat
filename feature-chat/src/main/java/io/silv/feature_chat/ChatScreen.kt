@@ -33,8 +33,10 @@ fun ChatScreen(
             ConversationContent(
                 uiState = state,
                 topAppBar = {  },
-                modifier = Modifier.fillMaxSize(),
-                userInput =  {}
+                modifier = Modifier,
+                onMessageSent = { viewModel.sendChat(it) },
+                onMessageChange = { viewModel.handleMessageChanged(it) },
+                onReceivedContent = { viewModel.onReceivedContent(it) }
             )
         }
         is ChatUiState.Error -> ChatErrorScreen(

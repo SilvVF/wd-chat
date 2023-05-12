@@ -6,6 +6,8 @@ import io.silv.ChatMessage
 import io.silv.UserInfo
 import io.silv.WsData
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 
 suspend fun WsData.toDomain(
@@ -40,7 +42,9 @@ data class Message(
     val author: String,
     val authorId: String,
     val content: String,
-    val timestamp: String = LocalDateTime.now().toString(),
+    val timestamp: String = LocalDateTime.now().format(
+        DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+    ).toString(),
     val images: List<Uri> = emptyList(),
 )
 

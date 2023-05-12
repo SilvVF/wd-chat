@@ -7,7 +7,6 @@ import io.silv.Image
 import io.silv.feature_chat.repo.WebsocketRepo
 import io.silv.feature_chat.types.Message
 import io.silv.feature_chat.types.MyChat
-import io.silv.feature_chat.types.UiChat
 import io.silv.feature_chat.types.UiWsData
 import io.silv.feature_chat.types.toDomain
 import io.silv.image_store.ImageRepository
@@ -55,7 +54,9 @@ internal suspend fun sendChatUseCaseImpl(
     )
     runCatching {
         websocketRepo.send(chat)
-    }.onFailure { it.printStackTrace() }
+    }.onFailure {
+        it.printStackTrace()
+    }
     return MyChat(
         message = Message(
             author = "me",

@@ -1,38 +1,25 @@
-/*
- * Copyright 2020 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 @file:OptIn(ExperimentalMaterial3Api::class)
 
 package io.silv.feature_chat.components
 
+import UserInput
 import android.net.Uri
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFrom
@@ -96,7 +83,9 @@ fun ConversationContent(
     uiState: ChatUiState.Success,
     modifier: Modifier = Modifier,
     topAppBar: @Composable () -> Unit,
-    userInput: @Composable ColumnScope.() -> Unit,
+    onMessageChange: (String) -> Unit,
+    onMessageSent: (String) -> Unit,
+    onReceivedContent: (Uri) -> Unit
 ) {
 
     val scrollState = rememberLazyListState()
@@ -115,17 +104,32 @@ fun ConversationContent(
             .exclude(WindowInsets.ime),
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { paddingValues ->
+
+        val sendMessageEnabled =
+            uiState.message.isNotBlank() || uiState.imageAttachments.isNotEmpty()
+
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(paddingValues)) {
+                .padding(paddingValues)
+        ) {
             Messages(
                 messages = uiState.chats.reversed(),
                 userIdToInfo = uiState.users,
                 modifier = Modifier.weight(1f),
                 scrollState = scrollState,
             )
-            userInput()
+            UserInput(
+                uiState = uiState,
+                sendMessageEnabled = sendMessageEnabled,
+                onMessageChange = onMessageChange,
+                onMessageSent = onMessageSent,
+                onReceivedContent = onReceivedContent,
+                modifier =  Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .imePadding()
+            )
         }
     }
 }
@@ -281,14 +285,16 @@ fun ChatItemBubble(
     }
 
     Column {
-        Surface(
-            color = backgroundBubbleColor,
-            shape = ChatBubbleShape
-        ) {
-            CopyableMessage(
-                message = message,
-                isUserMe = isUserMe,
-            )
+        if (message.content.isNotBlank()) {
+            Surface(
+                color = backgroundBubbleColor,
+                shape = ChatBubbleShape
+            ) {
+                CopyableMessage(
+                    message = message,
+                    isUserMe = isUserMe,
+                )
+            }
         }
 
         message.images.forEach {

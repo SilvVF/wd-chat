@@ -1,6 +1,7 @@
 package io.silv.feature_chat.di
 
 import android.content.Context
+import androidx.lifecycle.SavedStateHandle
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,18 +32,19 @@ object ChatModule {
     @ViewModelScoped
     @Provides
     fun provideChatViewModel(
+        savedStateHandle: SavedStateHandle,
         observeWifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase,
         connectToChatUseCase: ConnectToChatUseCase,
         collectChatUseCase: CollectChatUseCase,
         sendChatUseCase: SendChatUseCase,
         writeToAttachmentsUseCase: WriteToAttachmentsUseCase,
-        imageRepository: ImageRepository
     ): ChatViewModel = ChatViewModel(
         observeWifiDirectEventsUseCase = observeWifiDirectEventsUseCase,
         connectToChatUseCase = connectToChatUseCase,
         collectChatUseCase = collectChatUseCase,
         sendChatUseCase = sendChatUseCase,
-        writeToAttachmentsUseCase = writeToAttachmentsUseCase
+        writeToAttachmentsUseCase = writeToAttachmentsUseCase,
+        savedStateHandle = savedStateHandle
     )
 
     @ViewModelScoped

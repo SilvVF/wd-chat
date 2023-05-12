@@ -1,6 +1,7 @@
 package io.silv.feature_chat
 
 import android.net.Uri
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.silv.feature_chat.types.Chat
@@ -14,18 +15,17 @@ import io.silv.feature_chat.use_case.SendChatUseCase
 import io.silv.feature_chat.use_case.WriteToAttachmentsUseCase
 import io.silv.shared_ui.utils.EventViewModel
 import io.silv.wifi_direct.WifiP2pEvent
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
     observeWifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase,
     private val connectToChatUseCase: ConnectToChatUseCase,
     private val collectChatUseCase: CollectChatUseCase,
@@ -37,7 +37,7 @@ class ChatViewModel @Inject constructor(
     private val serverConnected = MutableStateFlow<Boolean?>(null)
     private val imageAttachments = MutableStateFlow(emptyList<Uri>())
     private val users = MutableStateFlow<Map<String, UiUserInfo>>(emptyMap())
-    private val message = MutableStateFlow<String>("")
+    private val message = MutableStateFlow(savedStateHandle["message"] ?: "")
 
 
     val chatUiState = combine(
@@ -78,6 +78,7 @@ class ChatViewModel @Inject constructor(
 
     fun handleMessageChanged(text: String) = viewModelScope.launch {
         message.emit(text)
+        savedStateHandle["message"] = text
     }
 
     fun onReceivedContent(uri: Uri) = viewModelScope.launch {
@@ -92,13 +93,6 @@ class ChatViewModel @Inject constructor(
             serverConnected.emit(connected)
             if (connected) {
                 startCollectingChat()
-                launch {
-                    delay(4000)
-                    while (true) {
-                        delay(2000)
-                        sendChat("Hello ${UUID.randomUUID()}")
-                    }
-                }
             }
         }
     }
@@ -133,6 +127,8 @@ class ChatViewModel @Inject constructor(
 
     fun sendChat(message: String) = viewModelScope.launch {
         val chat = sendChatUseCase(message, imageAttachments.value)
+        handleMessageChanged("")
+        imageAttachments.emit(emptyList())
         mutableChatFlow.getAndUpdate { list ->
             list + chat
         }

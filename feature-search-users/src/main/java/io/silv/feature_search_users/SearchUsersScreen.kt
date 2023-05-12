@@ -1,8 +1,10 @@
 package io.silv.feature_search_users
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
@@ -38,7 +40,7 @@ fun SearchUsersScreen(
     val users by viewModel.users.collectAsState(emptyList())
 
 
-    LazyColumn(Modifier.fillMaxSize()) {
+    LazyColumn(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets(top = 60.dp))) {
         items(users) {user ->
             Text(
                 text = user, modifier = Modifier.padding(12.dp).clickable {
