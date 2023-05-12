@@ -8,6 +8,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.silv.image_store.ImageRepository
 import io.silv.wifi_direct.WifiP2pReceiver
 import io.silv.wifidirectchat.MainActivityViewModel
 import io.silv.wifidirectchat.use_case.ObserveWifiDirectEventsUseCase
@@ -26,6 +27,12 @@ object AppModule {
     ): WifiP2pManager {
         return getSystemService(context, WifiP2pManager::class.java) as WifiP2pManager
     }
+
+    @Provides
+    @Singleton
+    fun provideImageRepository(
+        @ApplicationContext context: Context
+    ): ImageRepository = ImageRepository.getImpl(context)
 
 
     @Provides

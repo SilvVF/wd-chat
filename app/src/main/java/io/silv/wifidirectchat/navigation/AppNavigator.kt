@@ -44,6 +44,7 @@ fun Chat(
     )
 }
 
+@RootNavGraph(start = true)
 @Destination
 @Composable
 fun Onboard(
@@ -80,7 +81,6 @@ fun SearchUsers(
     }
 }
 
-@RootNavGraph(start = true)
 @Destination
 @Composable
 fun Home(

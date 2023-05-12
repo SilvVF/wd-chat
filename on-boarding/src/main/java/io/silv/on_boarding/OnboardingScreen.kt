@@ -22,17 +22,17 @@ fun OnboardScreen(
     val state by viewModel.state.collectAsState()
 
     when(state.currentScreen) {
-      1 -> PermissionsScreen(permissions = viewModel.permissions) {
-          viewModel.onPermissionsAccepted()
-      }
-      2 -> UserPreferencesScreen(
-          passcode = state.passcode,
-          onPasscodeChanged = { passcode ->
-              viewModel.updateUserPasscode(passcode = passcode)
+          1 -> PermissionsScreen(permissions = viewModel.permissions) {
+              viewModel.onPermissionsAccepted()
           }
-      ) { passcode, name ->
-          viewModel.onUserPreferencesDone(passcode, name)
-      }
+          2 -> UserPreferencesScreen(
+              passcode = state.passcode,
+              onPasscodeChanged = { passcode ->
+                  viewModel.updateUserPasscode(passcode)
+              }
+          ) { passcode, name, profilePicture ->
+              viewModel.onUserPreferencesDone(passcode, name, profilePicture)
+          }
     }
 }
 

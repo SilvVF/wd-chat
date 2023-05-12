@@ -1,15 +1,18 @@
 package io.silv.feature_chat.repo
 
+import io.silv.Image
 import io.silv.SendReceive
+import io.silv.UserInfo
 import io.silv.WsData
 import io.silv.client.ChatWebsocketClient
-import io.silv.image_store.ImageRepository
 import io.silv.server.ChatWebsocketServer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 class WebsocketRepo (
     private val scope: CoroutineScope,
@@ -28,6 +31,8 @@ class WebsocketRepo (
     suspend fun startConnection(
         groupOwner: Boolean,
         groupOwnerAddress: String,
+        name: String?,
+        icon: Pair<ByteArray?, String?>?
     ){
         ws = if (groupOwner) {
            ChatWebsocketServer(scope).also {
@@ -45,7 +50,23 @@ class WebsocketRepo (
                 closeActions.add { clientJob?.cancel() }
             }
         }
+        sendUserInfo(name, icon)
     }
+
+    private suspend fun sendUserInfo(name: String?, icon: Pair<ByteArray?, String?>?) = scope.launch {
+        for (i in 0..3) {
+            delay(2000)
+            send(
+                UserInfo(
+                    name ?: "user-${Random.nextDouble()}",
+                    Image(
+                        icon?.first ?: ByteArray(0),
+                        icon?.second ?: "")
+                )
+            )
+        }
+    }
+
     suspend fun send(wsData: WsData) {
         ws?.send(wsData)
     }

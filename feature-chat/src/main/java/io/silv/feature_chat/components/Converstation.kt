@@ -27,21 +27,26 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
@@ -61,6 +66,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import io.silv.feature_chat.ChatUiState
@@ -82,27 +88,73 @@ import kotlinx.coroutines.launch
 fun ConversationContent(
     uiState: ChatUiState.Success,
     modifier: Modifier = Modifier,
-    topAppBar: @Composable () -> Unit,
     onMessageChange: (String) -> Unit,
     onMessageSent: (String) -> Unit,
-    onReceivedContent: (Uri) -> Unit
+    onReceivedContent: (Uri) -> Unit,
+    deleteAttachment: (Uri) -> Unit,
+    navigateBack: () -> Unit
 ) {
 
     val scrollState = rememberLazyListState()
     val topBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topBarState)
-    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
-           topAppBar()
+           TopAppBar(
+               scrollBehavior = scrollBehavior,
+               title = {
+                      LazyRow {
+                          items(
+                              items = uiState.users.values.toList(),
+                              key = { info -> info.id }
+                          ) { info: UiUserInfo ->
+                              Column {
+                                  AsyncImage(
+                                      modifier = Modifier
+                                          .padding(horizontal = 16.dp)
+                                          .size(30.dp)
+                                          .border(
+                                              1.5.dp,
+                                              MaterialTheme.colorScheme.primary,
+                                              CircleShape
+                                          )
+                                          .border(
+                                              3.dp,
+                                              MaterialTheme.colorScheme.surface,
+                                              CircleShape
+                                          )
+                                          .clip(CircleShape),
+                                      model = ImageRequest.Builder(LocalContext.current)
+                                          .data(info.icon)
+                                          .crossfade(true)
+                                          .build(),
+                                      contentScale = ContentScale.Crop,
+                                      contentDescription = null,
+                                      placeholder = painterResource(id = io.silv.shared_ui.R.drawable.ic_profile_default)
+                                  )
+                              }
+                              Text(text = info.name, fontSize = 10.sp)
+                          }
+                      }
+               },
+               navigationIcon = {
+                   IconButton(onClick = { navigateBack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "back"
+                        )
+                   }
+               }
+           )
         },
         // Exclude ime and navigation bar padding so this can be added by the UserInput composable
         contentWindowInsets = ScaffoldDefaults
             .contentWindowInsets
             .exclude(WindowInsets.navigationBars)
             .exclude(WindowInsets.ime),
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
 
         val sendMessageEnabled =
@@ -112,6 +164,7 @@ fun ConversationContent(
             Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+
         ) {
             Messages(
                 messages = uiState.chats.reversed(),
@@ -125,7 +178,8 @@ fun ConversationContent(
                 onMessageChange = onMessageChange,
                 onMessageSent = onMessageSent,
                 onReceivedContent = onReceivedContent,
-                modifier =  Modifier
+                deleteAttachment = deleteAttachment,
+                modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
                     .imePadding()

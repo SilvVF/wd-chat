@@ -4,12 +4,14 @@ import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.silv.datastore.EncryptedDatastore
 import io.silv.feature_chat.types.Chat
 import io.silv.feature_chat.types.MyChat
 import io.silv.feature_chat.types.UiChat
 import io.silv.feature_chat.types.UiUserInfo
 import io.silv.feature_chat.use_case.CollectChatUseCase
 import io.silv.feature_chat.use_case.ConnectToChatUseCase
+import io.silv.feature_chat.use_case.DeleteAttachmentUseCase
 import io.silv.feature_chat.use_case.ObserveWifiDirectEventsUseCase
 import io.silv.feature_chat.use_case.SendChatUseCase
 import io.silv.feature_chat.use_case.WriteToAttachmentsUseCase
@@ -18,6 +20,8 @@ import io.silv.wifi_direct.WifiP2pEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -31,6 +35,8 @@ class ChatViewModel @Inject constructor(
     private val collectChatUseCase: CollectChatUseCase,
     private val sendChatUseCase: SendChatUseCase,
     private val writeToAttachmentsUseCase: WriteToAttachmentsUseCase,
+    private val deleteAttachmentUseCase: DeleteAttachmentUseCase,
+    private val datastore: EncryptedDatastore,
 ): EventViewModel<ChatEvent>() {
 
     private val mutableChatFlow = MutableStateFlow(emptyList<Chat>())
@@ -62,6 +68,18 @@ class ChatViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            launch {
+                datastore.readProfilePictureUri().first()?.let {
+                    users.emit(
+                        buildMap {
+                            users.value.forEach { (k, v) ->
+                                this[k] = v
+                            }
+                            this["me"] = UiUserInfo("me", it, "me")
+                        }
+                    )
+                }
+            }
             observeWifiDirectEventsUseCase().collect { event ->
                 when (event) {
                     is WifiP2pEvent.ConnectionChanged -> {
@@ -107,12 +125,14 @@ class ChatViewModel @Inject constructor(
                         mutableChatFlow.getAndUpdate { it + data }
                     }
                     is UiUserInfo -> {
-                        users.getAndUpdate { users ->
-                            buildMap {
-                                users.forEach { (k, v) ->
-                                    this[k] = v
+                        if (!users.value.contains(data.id)) {
+                            users.getAndUpdate { users ->
+                                buildMap {
+                                    users.forEach { (k, v) ->
+                                        this[k] = v
+                                    }
+                                    this[data.id] = data
                                 }
-                                this[data.id] = data
                             }
                         }
                     }
@@ -123,6 +143,13 @@ class ChatViewModel @Inject constructor(
                 ChatEvent.Error(it.message ?: "Unknown error")
             )
         }
+    }
+
+    fun deleteAttachment(uri: Uri) = viewModelScope.launch {
+        imageAttachments.getAndUpdate { list ->
+            list.filter { it != uri  }
+        }
+        deleteAttachmentUseCase(uri)
     }
 
     fun sendChat(message: String) = viewModelScope.launch {

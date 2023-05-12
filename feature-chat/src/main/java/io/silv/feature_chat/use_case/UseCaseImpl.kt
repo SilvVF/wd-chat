@@ -4,6 +4,7 @@ import android.net.Uri
 import arrow.core.Either
 import io.silv.ChatMessage
 import io.silv.Image
+import io.silv.datastore.EncryptedDatastore
 import io.silv.feature_chat.repo.WebsocketRepo
 import io.silv.feature_chat.types.Message
 import io.silv.feature_chat.types.MyChat
@@ -17,6 +18,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -25,6 +27,10 @@ internal suspend fun writeToAttachmentsUseCaseImpl(
     uri: Uri
 ): Uri {
     return ir.write(uri)
+}
+
+internal suspend fun deleteAttachmentUseCaseImpl(uri: Uri, imageRepository: ImageRepository) {
+    imageRepository.delete(uri)
 }
 
 internal suspend fun sendChatUseCaseImpl(
@@ -69,12 +75,21 @@ internal suspend fun sendChatUseCaseImpl(
 internal suspend fun connectToChatUseCaseImpl(
     isGroupOwner: Boolean,
     groupOwnerAddress: String,
-    websocketRepo: WebsocketRepo
+    websocketRepo: WebsocketRepo,
+    datastore: EncryptedDatastore,
+    ir: ImageRepository,
 ): Boolean {
     runCatching {
+
+        val icon = datastore.readProfilePictureUri().first()?.let {
+            ir.getFileFromUri(it)?.readBytes() to ir.getExtFromUri(it)
+        }
+
         websocketRepo.startConnection(
             groupOwner = isGroupOwner,
-            groupOwnerAddress = groupOwnerAddress
+            groupOwnerAddress = groupOwnerAddress,
+            name = datastore.readUserName().first(),
+            icon = icon
         )
     }
         .onFailure {

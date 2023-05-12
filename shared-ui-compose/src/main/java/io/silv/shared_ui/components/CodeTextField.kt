@@ -63,7 +63,7 @@ private fun DeleteKey(
     Box(
         modifier = Modifier
             .padding(4.dp)
-            .size(40.dp),
+            .size(50.dp),
         contentAlignment = Alignment.Center
     ) {
         IconButton(onClick = { delete() }) {
@@ -85,7 +85,7 @@ private fun EmptyCharBox() {
         modifier = Modifier
             .padding(4.dp)
             .clip(shape)
-            .size(40.dp)
+            .size(50.dp)
             .border(width = 2.dp, MaterialTheme.colorScheme.onBackground, shape)
             .background(Color.LightGray),
     ) {
@@ -114,7 +114,7 @@ private fun CodeCharBox(
         modifier = Modifier
             .padding(4.dp)
             .clip(shape)
-            .size(40.dp)
+            .size(50.dp)
             .border(width = 2.dp, borderColor, shape),
         contentAlignment = Alignment.Center
     ) {

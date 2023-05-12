@@ -2,6 +2,7 @@ package io.silv.on_boarding.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +24,7 @@ fun PermissionsScreen(
     }
 
 
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxSize().systemBarsPadding()) {
         Text("reasons why persmissions are needed")
         OutlinedButton(
             onClick = { permissionsState.launchMultiplePermissionRequest() },

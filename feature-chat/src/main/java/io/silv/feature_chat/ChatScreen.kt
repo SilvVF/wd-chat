@@ -32,11 +32,14 @@ fun ChatScreen(
         is ChatUiState.Success -> {
             ConversationContent(
                 uiState = state,
-                topAppBar = {  },
                 modifier = Modifier,
                 onMessageSent = { viewModel.sendChat(it) },
                 onMessageChange = { viewModel.handleMessageChanged(it) },
-                onReceivedContent = { viewModel.onReceivedContent(it) }
+                onReceivedContent = { viewModel.onReceivedContent(it) },
+                deleteAttachment = {viewModel.deleteAttachment(it)},
+                navigateBack = {
+
+                }
             )
         }
         is ChatUiState.Error -> ChatErrorScreen(

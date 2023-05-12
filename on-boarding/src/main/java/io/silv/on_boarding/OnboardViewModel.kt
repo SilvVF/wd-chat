@@ -1,31 +1,30 @@
 package io.silv.on_boarding
 
 import android.Manifest
+import android.net.Uri
 import android.os.Build
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.silv.datastore.EncryptedDatastore
+import io.silv.image_store.ImageRepository
 import io.silv.shared_ui.utils.EventViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class OnboardViewModel @Inject constructor(
-    private val datastore: EncryptedDatastore
+    private val datastore: EncryptedDatastore,
+    private val imageRepository: ImageRepository
 ): EventViewModel<OnboardEvent>() {
 
     private val lastStep = 2
 
     private val currentStep = MutableStateFlow(1)
     private val passcode = MutableStateFlow("")
-    private val passcodeError = MutableStateFlow(false)
-    private val nameError = MutableStateFlow(false)
-    private val permissionError = MutableStateFlow(false)
 
     val permissions = buildList {
         add(Manifest.permission.ACCESS_WIFI_STATE)
@@ -39,28 +38,14 @@ class OnboardViewModel @Inject constructor(
             add(Manifest.permission.NEARBY_WIFI_DEVICES)
     }
 
-    private val errors = combine(
-        passcodeError,
-        nameError,
-        permissionError
-    ) { passErr, nameErr, permsErr ->
-        OnboardState.OnboardError(
-            nameError = if (nameErr) 1 else null,
-            passcodeError = if (passErr) 1 else null,
-            permissionError = if (permsErr) 1 else null
-        )
-    }
-
 
     val state = combine(
         currentStep,
         passcode,
-        errors
-    ) { currentStep, passcode, errors ->
+    ) { currentStep, passcode ->
         OnboardState(
             currentScreen = currentStep,
             passcode = passcode,
-            error = errors
         )
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), OnboardState())
@@ -71,27 +56,17 @@ class OnboardViewModel @Inject constructor(
         currentStep.emit(curr + 1)
     }
 
-    fun onUserPreferencesDone(passcode: String, name: String) = viewModelScope.launch {
+    fun onUserPreferencesDone(passcode: String, name: String, uri: Uri) = viewModelScope.launch {
         datastore.writeUserPasscode(passcode)
         datastore.writeUserName(name)
-        val passMatches = (datastore.readUserPasscode().first() != passcode)
-            .also { passcodeError.emit(it) }
-        val nameMatches = (datastore.readUserName().first() != name)
-            .also { nameError.emit(it) }
-        if(listOf(passMatches, nameMatches)
-                .all { match -> match }
-        ) {
-            navigateToNext(2)
-        }
+        datastore.writeProfilePictureUri(imageRepository.write(uri))
+        navigateToNext(2)
     }
 
     fun onPermissionsAccepted() = navigateToNext(1)
-    fun updateUserPasscode(passcode: String) = viewModelScope.launch {
-        this@OnboardViewModel.passcode.emit(passcode)
-    }
 
-    fun updateUserName(name: String) = viewModelScope.launch {
-        datastore.writeUserName(name)
+    fun updateUserPasscode(code: String) = viewModelScope.launch {
+        passcode.emit(code)
     }
 }
 

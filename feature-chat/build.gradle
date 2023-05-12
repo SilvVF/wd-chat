@@ -58,7 +58,8 @@ dependencies {
             project(":wifi-direct"),
             project(':websockets'),
             project(':image-store'),
-            project(":local-database")
+            project(":local-database"),
+            project(":datastore")
     )
 
     //Arrow
