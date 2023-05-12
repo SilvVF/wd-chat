@@ -2,7 +2,6 @@
 
 package io.silv.feature_chat.components
 
-import UserInput
 import android.net.Uri
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.updateTransition
@@ -16,6 +15,7 @@ import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
@@ -23,8 +23,11 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFrom
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -60,6 +63,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LastBaseline
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -74,6 +78,8 @@ import io.silv.feature_chat.types.Chat
 import io.silv.feature_chat.types.Message
 import io.silv.feature_chat.types.MyChat
 import io.silv.feature_chat.types.UiUserInfo
+import io.silv.imagekeyboardtest.ui.AttachmentList
+import io.silv.imagekeyboardtest.ui.UserInput
 import io.silv.shared_ui.components.messageFormatter
 import kotlinx.coroutines.launch
 
@@ -149,8 +155,7 @@ fun ConversationContent(
            )
         },
         // Exclude ime and navigation bar padding so this can be added by the UserInput composable
-        contentWindowInsets = ScaffoldDefaults
-            .contentWindowInsets
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsets
             .exclude(WindowInsets.navigationBars)
             .exclude(WindowInsets.ime),
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -173,16 +178,20 @@ fun ConversationContent(
                 scrollState = scrollState,
             )
             UserInput(
-                uiState = uiState,
-                sendMessageEnabled = sendMessageEnabled,
-                onMessageChange = onMessageChange,
-                onMessageSent = onMessageSent,
-                onReceivedContent = onReceivedContent,
-                deleteAttachment = deleteAttachment,
+                text = uiState.message,
+                onTextChanged = {onMessageChange(it)} ,
+                attachments = uiState.imageAttachments,
+                attachmentsReceived = { uri ->
+                       uri.forEach { onReceivedContent(it) }
+                },
+                onDeleteAttachment = { deleteAttachment(it) },
+                sendChat = { onMessageSent(it) },
                 modifier = Modifier
                     .fillMaxWidth()
+                    .wrapContentHeight()
                     .navigationBarsPadding()
                     .imePadding()
+
             )
         }
     }
