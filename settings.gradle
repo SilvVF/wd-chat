@@ -6,6 +6,11 @@ pluginManagement {
     }
 }
 dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            files("../gradle/libs.versions.toml")
+        }
+    }
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
@@ -19,7 +24,6 @@ include ':shared-ui-compose'
 include ':websockets'
 include ':on-boarding'
 include ':feature-search-users'
-include ':local-database'
 include ':datastore'
 include ':feature-create-group'
 include ':feature-chat'

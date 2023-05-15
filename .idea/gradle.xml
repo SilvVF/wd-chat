@@ -17,7 +17,6 @@
             <option value="$PROJECT_DIR$/feature-create-group" />
             <option value="$PROJECT_DIR$/feature-search-users" />
             <option value="$PROJECT_DIR$/image-store" />
-            <option value="$PROJECT_DIR$/local-database" />
             <option value="$PROJECT_DIR$/on-boarding" />
             <option value="$PROJECT_DIR$/shared-ui-compose" />
             <option value="$PROJECT_DIR$/websockets" />
