@@ -18,15 +18,6 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @Inject
-    lateinit var receiver: WifiP2pReceiver
-
-    private val intentFilter = IntentFilter().apply {
-        addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION)
-        addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION)
-        addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION)
-        addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,21 +37,6 @@ class MainActivity : ComponentActivity() {
             WifiDirectChatTheme {
                 AppNavigator()
             }
-        }
-    }
-    /* register the broadcast receiver with the intent values to be matched */
-    override fun onResume() {
-        super.onResume()
-        receiver.also { receiver ->
-            registerReceiver(receiver, intentFilter)
-        }
-    }
-
-    /* unregister the broadcast receiver */
-    override fun onPause() {
-        super.onPause()
-        receiver.also { receiver ->
-            unregisterReceiver(receiver)
         }
     }
 }

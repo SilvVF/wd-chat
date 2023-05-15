@@ -87,6 +87,7 @@ class SearchUsersViewModel @Inject constructor(
                 WifiP2pEvent.ThisDeviceChanged -> {
                     // TODO()
                 }
+                WifiP2pEvent.Unknown -> Unit
             }
         }
     }

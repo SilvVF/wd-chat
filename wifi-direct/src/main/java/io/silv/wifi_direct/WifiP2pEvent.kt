@@ -15,4 +15,6 @@ sealed class WifiP2pEvent {
     object ThisDeviceChanged : WifiP2pEvent()
 
     data class DiscoveryChanged(val started: Boolean): WifiP2pEvent()
+
+    object Unknown: WifiP2pEvent()
 }

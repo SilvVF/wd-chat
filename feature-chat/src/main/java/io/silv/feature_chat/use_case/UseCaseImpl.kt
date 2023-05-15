@@ -19,8 +19,10 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 internal suspend fun writeToAttachmentsUseCaseImpl(
     ir: ImageRepository,
@@ -39,20 +41,14 @@ internal suspend fun sendChatUseCaseImpl(
     message: String,
     uris: List<Uri>
 ): MyChat {
-    val images = withContext(Dispatchers.IO) {
-        uris.map {
-            async {
-                ir.getFileFromUri(it) to ir.getExtFromUri(it)
-            }
+    val images = uris
+        .mapDeffered(Dispatchers.IO) { ir.getFileFromUri(it) to ir.getExtFromUri(it) }
+        .mapNotNull { (file, ext) ->
+            Image(
+                data = file?.readBytes() ?: return@mapNotNull null,
+                ext = ext
+            )
         }
-            .awaitAll()
-            .mapBothNotNull { (file, ext) ->
-                file?.readBytes() to ext
-            }
-            .map { (bytes, ext) ->
-                Image(data = bytes, ext = ext)
-            }
-    }
     val chat = ChatMessage(
         message = message,
         images = images,
@@ -100,9 +96,8 @@ internal suspend fun connectToChatUseCaseImpl(
 
 internal fun observeWifiDirectEventsUseCaseImpl(
     wifiP2pReceiver: WifiP2pReceiver
-): SharedFlow<WifiP2pEvent> {
-    return wifiP2pReceiver.eventBroadcast
-}
+): Flow<WifiP2pEvent> = wifiP2pReceiver.p2pBroadcast
+    .flowOn(Dispatchers.IO)
 
 internal fun collectChatUseCaseImpl(
     websocketRepo: WebsocketRepo,
@@ -117,6 +112,16 @@ internal fun collectChatUseCaseImpl(
         }
     }
 }
+
+suspend fun <T, R> List<T>.mapDeffered(context: CoroutineContext, transform: suspend (T) -> R): List<R> =
+    withContext(context) {
+       this@mapDeffered.map { item ->
+           async {
+                transform(item)
+           }
+       }
+           .awaitAll()
+   }
 
 fun <T, T2, R, R2>  List<Pair<T, T2>>.mapBothNotNull(transform: (Pair<T, T2>) -> Pair<R?, R2?>): List<Pair<R, R2>> {
     return this.mapNotNull {

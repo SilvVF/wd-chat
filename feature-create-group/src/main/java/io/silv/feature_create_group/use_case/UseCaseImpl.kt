@@ -6,8 +6,11 @@ import io.silv.wifi_direct.WifiP2pEvent
 import io.silv.wifi_direct.WifiP2pReceiver
 import io.silv.wifi_direct.types.P2pError
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 
 internal suspend fun createGroupUseCaseImpl(
@@ -23,7 +26,8 @@ internal suspend fun createGroupUseCaseImpl(
 
 internal fun observeWifiDirectEventsUseCaseImpl(
     wifiP2pReceiver: WifiP2pReceiver
-): SharedFlow<WifiP2pEvent> {
-    return wifiP2pReceiver.eventBroadcast
+): Flow<WifiP2pEvent> {
+    return wifiP2pReceiver.p2pBroadcast
+        .flowOn(Dispatchers.IO)
 }
 

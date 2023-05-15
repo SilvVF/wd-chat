@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.SharedFlow
 
 fun interface StartDiscoveryUseCase: suspend () -> Either<P2pError, Boolean>
 
-fun interface ObserveWifiDirectEventsUseCase: () -> SharedFlow<WifiP2pEvent>
+fun interface ObserveWifiDirectEventsUseCase: () -> Flow<WifiP2pEvent>
 
 fun interface ConnectToDeviceUseCase: suspend (
     WifiP2pDevice,

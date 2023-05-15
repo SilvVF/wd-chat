@@ -35,11 +35,12 @@ object AppModule {
     ): ImageRepository = ImageRepository.getImpl(context)
 
 
+
     @Provides
     @Singleton
-    fun provideWifiP2pReceiver(): WifiP2pReceiver = WifiP2pReceiver(
-        scope = CoroutineScope(Dispatchers.IO)
-    )
+    fun provideWifiP2pReceiver(
+        @ApplicationContext context: Context,
+    ): WifiP2pReceiver = WifiP2pReceiver(context)
 
     @Provides
     @Singleton
