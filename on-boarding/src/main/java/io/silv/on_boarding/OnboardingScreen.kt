@@ -55,7 +55,7 @@ fun OnboardScreen(
     BackHandler {
         viewModel.navigateBack()
     }
-
+    
     if (state.step == OnboardStep.Done) {
         onDone()
     }

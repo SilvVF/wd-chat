@@ -75,12 +75,19 @@ dependencies {
             project(":feature-search-users"),
             project(":feature-create-group"),
             project(":feature-chat"),
+            project(":datastore")
     )
 
 
     implementation libs.hilt
     kapt libs.hilt.compiler
     implementation libs.hilt.nav.compose
+
+    implementation libs.datastore.preferences
+    implementation libs.datastore.preferences.core
+
+    implementation libs.coil
+    implementation libs.coil.compose
 
     def nav_version = "2.5.3"
 

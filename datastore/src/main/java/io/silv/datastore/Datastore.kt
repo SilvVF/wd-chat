@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -30,6 +31,10 @@ interface EncryptedDatastore {
     suspend fun writeProfilePictureUri(uri: Uri)
 
     suspend fun readProfilePictureUri(): Flow<Uri?>
+
+    suspend fun readOnboardCompleted(): Flow<Boolean>
+
+    suspend fun writeOnboardCompleted(complete: Boolean): Preferences
 }
 
 class EncryptedDatastoreImpl @Inject constructor(
@@ -41,6 +46,7 @@ class EncryptedDatastoreImpl @Inject constructor(
     private val USER_PASS_KEY = stringPreferencesKey("USER_PASS_KEY")
     private val USER_NAME_KEY = stringPreferencesKey("USER_NAME_KEY")
     private val PROFILE_IMAGE = stringPreferencesKey("PROFILE_IMAGE")
+    private val ONBOARD_COMPLETE = booleanPreferencesKey("ONBOARD_COMPLETE")
 
     override suspend fun writeUserPasscode(pass: String) {
         store.edit { prefs ->
@@ -82,6 +88,16 @@ class EncryptedDatastoreImpl @Inject constructor(
     override suspend fun readProfilePictureUri(): Flow<Uri?> =
         store.data.map { prefs ->
             prefs[PROFILE_IMAGE]?.toUri()
+        }
+
+    override suspend fun readOnboardCompleted(): Flow<Boolean> =
+        store.data.map { prefs ->
+            prefs[ONBOARD_COMPLETE] ?: false
+        }
+
+    override suspend fun writeOnboardCompleted(complete: Boolean): Preferences =
+        store.edit {prefs ->
+            prefs[ONBOARD_COMPLETE] = complete
         }
 
 }

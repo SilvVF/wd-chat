@@ -1,15 +1,11 @@
 package io.silv.wifidirectchat.navigation
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
@@ -18,10 +14,10 @@ import io.silv.feature_chat.ChatScreen
 import io.silv.feature_create_group.CreateGroupScreen
 import io.silv.feature_search_users.SearchUsersScreen
 import io.silv.on_boarding.OnboardScreen
+import io.silv.wifidirectchat.MainActivityViewModel
 import io.silv.wifidirectchat.navigation.destinations.ChatDestination
-import io.silv.wifidirectchat.navigation.destinations.CreateGroupDestination
 import io.silv.wifidirectchat.navigation.destinations.HomeDestination
-import io.silv.wifidirectchat.navigation.destinations.SearchUsersDestination
+import io.silv.wifidirectchat.ui.HomeScreen
 
 
 @Composable
@@ -48,11 +44,20 @@ fun Chat(
 @Destination
 @Composable
 fun Onboard(
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
+    mainViewModel: MainActivityViewModel = hiltViewModel()
 ) {
+
+    val onboarded by mainViewModel.onboarded.collectAsStateWithLifecycle()
+
+    if (onboarded) {
+        navigator.navigate(HomeDestination)
+    }
+
     OnboardScreen(
         viewModel = hiltViewModel(),
     ) {
+        mainViewModel.onboardComplete()
         navigator.navigate(HomeDestination)
     }
 }
@@ -81,22 +86,13 @@ fun SearchUsers(
     }
 }
 
+
 @Destination
 @Composable
 fun Home(
     navigator: DestinationsNavigator
 ) {
-
-    Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets(top = 60.dp))) {
-        Button(onClick = {
-            navigator.navigate(CreateGroupDestination)
-        }) {
-            Text("Create Group")
-        }
-        Button(onClick = {
-            navigator.navigate(SearchUsersDestination)
-        }) {
-            Text("Join Group")
-        }
+    HomeScreen { direction ->
+        navigator.navigate(direction)
     }
 }

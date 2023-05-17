@@ -6,6 +6,7 @@ coil = "2.3.0"
 androidxComposeBom = "2023.04.01"
 androidxCoreKtx = "1.10.1"
 lottie = "6.0.0"
+datastore = "1.0.0"
 
 [libraries]
 hilt = { module =  "com.google.dagger:hilt-android", version.ref = "hilt"}
@@ -19,6 +20,8 @@ androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", versi
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 androidx-core-ktx = {module ="androidx.core:core-ktx", version.ref="androidxCoreKtx"}
 lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref="lottie" }
+datastore-preferences-core = {module="androidx.datastore:datastore-preferences", version.ref="datastore"}
+datastore-preferences = {module="androidx.datastore:datastore-preferences", version.ref="datastore"}
 
 [plugins]
 

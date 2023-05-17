@@ -8,13 +8,12 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.silv.datastore.EncryptedDatastore
 import io.silv.image_store.ImageRepository
 import io.silv.wifi_direct.WifiP2pReceiver
 import io.silv.wifidirectchat.MainActivityViewModel
 import io.silv.wifidirectchat.use_case.ObserveWifiDirectEventsUseCase
 import io.silv.wifidirectchat.use_case.observeWifiDirectEventsUseCaseImpl
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import javax.inject.Singleton
 
 @Module
@@ -53,10 +52,12 @@ object AppModule {
     @Provides
     @Singleton
     fun provideMainActivityViewModel(
-        observeWifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase
+        observeWifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase,
+        datastore: EncryptedDatastore
     ): MainActivityViewModel {
         return MainActivityViewModel(
-            observeWifiDirectEventsUseCase = observeWifiDirectEventsUseCase
+            observeWifiDirectEventsUseCase = observeWifiDirectEventsUseCase,
+            datastore = datastore
         )
     }
 }

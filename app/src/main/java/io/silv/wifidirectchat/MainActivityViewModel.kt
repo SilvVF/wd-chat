@@ -2,36 +2,47 @@ package io.silv.wifidirectchat
 
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.silv.datastore.EncryptedDatastore
 import io.silv.shared_ui.utils.EventViewModel
 import io.silv.wifi_direct.WifiP2pEvent
 import io.silv.wifidirectchat.use_case.ObserveWifiDirectEventsUseCase
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
-    private val observeWifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase
+    private val observeWifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase,
+    private val datastore: EncryptedDatastore
 ): EventViewModel<MainActivityEvent>() {
 
-    var onboarded by mutableStateOf(false)
+    val onboarded = flow {
+        datastore.readOnboardCompleted().collect {
+            emit(it)
+        }
+    }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
 
     fun collectWifiEvents() = viewModelScope.launch {
             observeWifiDirectEventsUseCase().collect { event ->
                 logEvent(event)
                 when (event) {
                     is WifiP2pEvent.StateChanged ->  {
-                        if (!event.enabled && onboarded) {
+                        if (!event.enabled && onboarded.value) {
                             // TODO (Check Permsissions and show error that wifi direct is disabled)
                         }
                     }
                     else -> Unit
                 }
             }
+    }
+
+    fun onboardComplete() = viewModelScope.launch {
+        datastore.writeOnboardCompleted(true)
     }
 
     private fun logEvent(event: WifiP2pEvent) {

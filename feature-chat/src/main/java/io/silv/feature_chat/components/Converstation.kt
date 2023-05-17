@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
@@ -23,15 +22,14 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFrom
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -63,7 +61,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LastBaseline
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -78,7 +75,6 @@ import io.silv.feature_chat.types.Chat
 import io.silv.feature_chat.types.Message
 import io.silv.feature_chat.types.MyChat
 import io.silv.feature_chat.types.UiUserInfo
-import io.silv.imagekeyboardtest.ui.AttachmentList
 import io.silv.imagekeyboardtest.ui.UserInput
 import io.silv.shared_ui.components.messageFormatter
 import kotlinx.coroutines.launch
@@ -104,6 +100,12 @@ fun ConversationContent(
     val scrollState = rememberLazyListState()
     val topBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topBarState)
+    val users = remember(uiState.users.values) {
+        uiState.users.values.toList()
+    }
+    val sortedMessages = remember(uiState.chats) {
+        uiState.chats.reversed()
+    }
 
     Scaffold(
         topBar = {
@@ -112,7 +114,7 @@ fun ConversationContent(
                title = {
                       LazyRow {
                           items(
-                              items = uiState.users.values.toList(),
+                              items = users,
                               key = { info -> info.id }
                           ) { info: UiUserInfo ->
                               Column {
@@ -172,14 +174,14 @@ fun ConversationContent(
 
         ) {
             Messages(
-                messages = uiState.chats.reversed(),
+                messages = sortedMessages,
                 userIdToInfo = uiState.users,
                 modifier = Modifier.weight(1f),
                 scrollState = scrollState,
             )
             UserInput(
                 text = uiState.message,
-                onTextChanged = {onMessageChange(it)} ,
+                onTextChanged = { onMessageChange(it) } ,
                 attachments = uiState.imageAttachments,
                 attachmentsReceived = { uri ->
                        uri.forEach { onReceivedContent(it) }
@@ -216,23 +218,20 @@ fun Messages(
                 .testTag(ConversationTestTag)
                 .fillMaxSize()
         ) {
-            for (index in messages.indices) {
+            itemsIndexed(messages) { index, chat ->
                 val prevAuthor = messages.getOrNull(index - 1)?.message?.authorId
                 val nextAuthor = messages.getOrNull(index + 1)?.message?.authorId
                 val content = messages[index]
                 val isFirstMessageByAuthor = prevAuthor != content.message.authorId
                 val isLastMessageByAuthor = nextAuthor != content.message.authorId
 
-
-                item {
-                    Message(
-                        msg = content.message,
-                        isUserMe = content is MyChat,
-                        isFirstMessageByAuthor = isFirstMessageByAuthor,
-                        isLastMessageByAuthor = isLastMessageByAuthor,
-                        userIcon = userIdToInfo[content.message.authorId]?.icon
-                    )
-                }
+                Message(
+                    msg = content.message,
+                    isUserMe = content is MyChat,
+                    isFirstMessageByAuthor = isFirstMessageByAuthor,
+                    isLastMessageByAuthor = isLastMessageByAuthor,
+                    userIcon = userIdToInfo[content.message.authorId]?.icon
+                )
             }
         }
         // Jump to bottom button shows up when user scrolls past a threshold.

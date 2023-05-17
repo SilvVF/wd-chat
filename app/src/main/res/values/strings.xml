@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">WifiDirectChat</string>
+    <string name="create_group_hint">create group explanation.</string>
+    <string name="create_group_explanation">
+        Creating a group will make this device the group owner.
+        This means this device will be the one to host the server which
+        could lead to increased power consumption. Creating a group can be used to determine the
+        device that will be the server host manually as searching allow the Android system to determine this.
+    </string>
+    <string name="create_group_btn">create group</string>
+    <string name="search_users_hint">search users explanation.</string>
+    <string name="search_users_explantion">
+        Searching for users will search for nearby devices that have wifi direct enabled.
+        This search can pick up all devices with this feature. When connecting using this option the
+        server host will be determined by the Android system. If you want to control who the server host is
+        see the create group option.
+    </string>
+    <string name="search_users_btn">search users</string>
 </resources>
