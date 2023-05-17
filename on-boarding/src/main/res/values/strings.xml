@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="reason_for_username">Enter a username that will be displayed when joining chat rooms. This name will be used when sending message and can be changed later in settings.</string>
+    <string name="username_placeholder">enter a username</string>
+    <string name="username_supporting_text">username</string>
+    <string name="finish_username_setup">finish username setup</string>
+    <string name="name_error_blank">the username cannot be blank</string>
+    <string name="permissions_title">Accept required permissions</string>
+    <string name="username_title">Enter a username</string>
+    <string name="profile_picture_title">Upload a profile picture</string>
+    <string name="done_title">Done</string>
+    <string name="finish_profile_picture">finish uploading picture</string>
+    <string name="permissions_explanation">
+        This app needs access to your devices location as well as the ability to discover nearby devices.
+        The location permissions will not be used for any tracking purposes and are required by the WiFi Direct
+        apis to locate other devices. The app will also need to access the network state to monitor the connection
+        between other devices. Click the below button to accept the permissions from the popup. If the button does not work
+        they may need to be changed in the settings.
+    </string>
+    <string name="permission_btn_text">click to accept permissions</string>
+    <string name="permissions_exp_hint">why are these permissions required?</string>
+    <string name="current_step">step %1$s of %2$s</string>
+    <string name="username_explanation_hint">what is the username used for?</string>
+    <string name="profile_pic">Profile Picture</string>
+    <string name="profile_pic_upload_btn">tap to select a profile picture</string>
+    <string name="profile_pic_hint">profile picture preview</string>
+</resources>

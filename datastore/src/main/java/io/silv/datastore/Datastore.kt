@@ -23,7 +23,7 @@ interface EncryptedDatastore {
 
     suspend fun readUserPasscode(): Flow<String?>
 
-    suspend fun writeUserName(name: String)
+    suspend fun writeUserName(name: String): Preferences
 
     suspend fun readUserName(): Flow<String?>
 
@@ -57,8 +57,8 @@ class EncryptedDatastoreImpl @Inject constructor(
             }
         }
 
-    override suspend fun writeUserName(name: String) {
-        store.edit { prefs ->
+    override suspend fun writeUserName(name: String): Preferences {
+        return store.edit { prefs ->
             AESEncryption.encrypt(name)?.let { encryptedName ->
                 prefs[USER_NAME_KEY] = encryptedName
             }

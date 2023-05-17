@@ -3,7 +3,9 @@ package io.silv.on_boarding
 import androidx.annotation.StringRes
 
 data class OnboardState(
-    val currentScreen: Int = 0,
+    val loading: Boolean = true,
+    val nameErrors: List<NameError> = emptyList(),
+    val step: OnboardStep = OnboardStep.Permissions,
     val name: String = "",
     val passcode: String = "",
     val error: OnboardError = OnboardError()

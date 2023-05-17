@@ -8,6 +8,13 @@ plugins {
 android {
     namespace 'io.silv.on_boarding'
     compileSdk 33
+    defaultConfig {
+        minSdk 29
+        targetSdk 33
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
     buildTypes {
         release {
             minifyEnabled false
@@ -57,6 +64,16 @@ dependencies {
     kapt libs.hilt.compiler
     implementation libs.hilt.nav.compose
 
+    //lottie
+    implementation libs.lottie.compose
+
+    implementation("androidx.datastore:datastore-preferences-core:1.0.0")
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
     implementation "com.google.accompanist:accompanist-permissions:0.31.1-alpha"
-    api(project(':shared-ui-compose'), project(':datastore'), project(":image-store"))
+    implementation(
+            project(':shared-ui-compose'),
+            project(':datastore'),
+            project(":image-store")
+    )
 }

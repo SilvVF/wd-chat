@@ -5,6 +5,7 @@ arrow = "1.2.0-RC"
 coil = "2.3.0"
 androidxComposeBom = "2023.04.01"
 androidxCoreKtx = "1.10.1"
+lottie = "6.0.0"
 
 [libraries]
 hilt = { module =  "com.google.dagger:hilt-android", version.ref = "hilt"}
@@ -17,7 +18,7 @@ coil-compose = {module="io.coil-kt:coil-compose", version.ref="coil" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 androidx-core-ktx = {module ="androidx.core:core-ktx", version.ref="androidxCoreKtx"}
-
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref="lottie" }
 
 [plugins]
 
