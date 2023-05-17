@@ -3,6 +3,7 @@ package io.silv.on_boarding
 import android.Manifest
 import android.net.Uri
 import android.os.Build
+import androidx.datastore.dataStore
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -92,7 +93,8 @@ class OnboardViewModel @Inject constructor(
 
     fun onProfilePictureDone(uri: Uri) = viewModelScope.launch {
         runCatching {
-            imageRepository.write(uri)
+            val localUri = imageRepository.write(uri)
+            userStore.writeProfilePictureUri(localUri)
         }
             .onSuccess {
                 navigateToNext(OnboardStep.ProfilePicture)

@@ -89,6 +89,8 @@ dependencies {
     implementation libs.coil
     implementation libs.coil.compose
 
+    implementation libs.lottie.compose
+
     def nav_version = "2.5.3"
 
     implementation("androidx.navigation:navigation-compose:$nav_version")

@@ -90,5 +90,5 @@ private fun Context.flowBroadcasts(intentFilter: IntentFilter): Flow<Intent> {
     }
 
     return resultChannel.onStart { registerReceiver(receiver, intentFilter) }
-        .onCompletion { unregisterReceiver(receiver) }
+        .onCompletion { runCatching { unregisterReceiver(receiver)  } }
 }
