@@ -3,15 +3,13 @@ package io.silv.feature_chat.components
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Build
-import android.view.View
-import android.view.WindowInsets
-import android.view.WindowInsetsAnimation
+import android.view.View.OnFocusChangeListener
 import android.widget.EditText
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowCircleRight
 import androidx.compose.material.icons.filled.Attachment
@@ -30,9 +27,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,17 +38,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.util.component1
+import androidx.core.util.component2
+import androidx.core.view.OnReceiveContentListener
+import androidx.core.view.ViewCompat
+import androidx.core.view.marginBottom
+import androidx.core.view.setPadding
+import androidx.core.widget.doOnTextChanged
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 
@@ -90,7 +89,6 @@ fun UserInput(
         AttachmentList(attachments = attachments, onDeleteAttachment = onDeleteAttachment)
         ChatBar(
                 text = text,
-                attachmentPickerSelected = attachmentPickerSelected,
                 onTextChanged = { onTextChanged(it) } ,
                 sendChat = { sendChat(text) },
                 attachments = attachments,
@@ -100,7 +98,8 @@ fun UserInput(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
                     )
                 },
-                onDeleteAttachment = onDeleteAttachment
+                onDeleteAttachment = onDeleteAttachment,
+                onReceivedContent = { attachmentsReceived(listOf(it)) }
             )
         }
 }
@@ -109,18 +108,17 @@ fun UserInput(
 @Composable
 fun ChatBar(
     text: String,
-    attachmentPickerSelected: Boolean,
     attachments: List<Uri>,
     onTextChanged: (String) -> Unit,
     attachmentIconClicked: () -> Unit,
     sendChat: (String) -> Unit,
+    onReceivedContent: (Uri) -> Unit,
     onDeleteAttachment: (Uri) -> Unit,
 ) {
 
     var textFieldFocused by remember {
         mutableStateOf(false)
     }
-    var focusRequester = remember { FocusRequester() }
 
     Row(
         modifier = Modifier.padding(12.dp),
@@ -137,36 +135,17 @@ fun ChatBar(
             )
         }
         val shape = RoundedCornerShape(32.dp)
-        val atApiR by remember {
-            derivedStateOf {
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
-            }
-        }
-
-        if (atApiR) {
-            TextFieldApiUnderR(
+        TextFieldStickerSupport(
                 modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .shadow(2.dp, shape)
-                    .onFocusChanged {
-                        textFieldFocused = it.isFocused
-                    },
+                    .weight(1f)
+                    .padding(4.dp),
                 text = text,
-                shape = shape,
+                onFocusChanged = {
+                    textFieldFocused = it
+                },
                 onTextChanged = onTextChanged,
-                focused = textFieldFocused
+                onReceivedContent = onReceivedContent
             )
-        } else {
-            TextFieldApiAtR(
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .shadow(2.dp, shape)
-                ,
-                text = text,
-                onTextChanged = onTextChanged
-            )
-        }
-
         val enabled = text.isNotBlank() || attachments.isNotEmpty()
 
         IconButton(
@@ -221,62 +200,52 @@ fun AttachmentList(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.R)
 @Composable
-fun TextFieldApiAtR(
+fun TextFieldStickerSupport(
     modifier: Modifier,
     text: String,
+    onReceivedContent: (Uri) -> Unit,
+    onFocusChanged: (Boolean) -> Unit,
     onTextChanged: (String) -> Unit
 ) {
-    fun insetsCallback(view: View) = object : WindowInsetsAnimation.Callback(DISPATCH_MODE_STOP) {
-
-        var startBottom = 0f
-        var endBottom = 0f
-
-        override fun onPrepare(animation: WindowInsetsAnimation) {
-            startBottom = view.bottom.toFloat()
-        }
-
-        override fun onStart(
-            animation: WindowInsetsAnimation,
-            bounds: WindowInsetsAnimation.Bounds
-        ): WindowInsetsAnimation.Bounds {
-            endBottom = view.bottom.toFloat()
-            view.translationY = startBottom - endBottom
-            return bounds
-        }
-
-        fun lerp(start: Float, stop: Float, fraction: Float): Float {
-            return start * (1.0f - fraction) + (stop * fraction);
-        }
-
-        override fun onProgress(
-            insets: WindowInsets,
-            runningAnimations: MutableList<WindowInsetsAnimation>
-        ): WindowInsets {
-            val offset = lerp(
-                start = startBottom,
-                stop = endBottom,
-                fraction = runningAnimations.first().interpolatedFraction
-            )
-            // ...which we then set using translationY
-            view.translationY = offset
-
-            return insets
-        }
-    }
-
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
+
+
+        val listener = remember {
+            OnReceiveContentListener { _, payload ->
+
+                val (content, rest) = payload.partition { item -> item.uri != null }
+
+                content?.let {
+                    for (i in 0 until it.clip.itemCount) {
+                        val item = it.clip.getItemAt(i).uri
+                        onReceivedContent(item)
+                    }
+                }
+                rest
+            }
+        }
+
         AndroidView(
             modifier = Modifier.fillMaxWidth(),
             factory = {
                 EditText(it).apply {
+                    ViewCompat.setOnReceiveContentListener(
+                        this, arrayOf("image/*", "video/*"), listener
+                    )
                     setBackgroundColor(Color.Transparent.toArgb())
                     setText(text)
-                    setWindowInsetsAnimationCallback(insetsCallback(this))
+                    onFocusChangeListener = OnFocusChangeListener { v, hasFocus ->
+                        onFocusChanged(hasFocus)
+                    }
+                    doOnTextChanged { text, start, before, count ->
+                        onTextChanged(text.toString())
+                    }
+                    hint = "send a message"
+                    setPadding(0, 0, 0, 16)
                 }
             },
             update = {
@@ -286,31 +255,4 @@ fun TextFieldApiAtR(
             }
         )
     }
-}
-
-@Composable
-fun TextFieldApiUnderR(
-    modifier: Modifier,
-    text: String,
-    focused: Boolean,
-    shape: RoundedCornerShape,
-    onTextChanged: (String) -> Unit
-) {
-    BasicTextField(
-        value = text,
-        modifier = modifier,
-        textStyle = TextStyle(fontSize = 18.sp),
-        onValueChange = onTextChanged,
-        decorationBox = { innerTextField ->
-            Box(
-                modifier = modifier,
-                contentAlignment = Alignment.CenterStart
-            ) {
-                if (text.isEmpty() && !focused) {
-                    Text("send a message")
-                }
-                innerTextField()
-            }
-        }
-    )
 }

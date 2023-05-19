@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -131,6 +132,7 @@ fun CreateGroupScreen(
             OutlinedButton(
                 onClick = { viewModel.createGroup() },
                 enabled = state.passcodeError == null,
+                modifier = Modifier.imePadding()
             ) {
                 Text(
                     text = stringResource(id = R.string.create_group_btn_label),
