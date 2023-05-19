@@ -53,6 +53,7 @@ fun CodeTextField(
     }
 
     BasicTextField(
+        modifier = modifier,
         value = text,
         onValueChange = {
             if (it.length <= maxTextLength) {
@@ -79,10 +80,9 @@ fun CodeTextField(
                         .size(50.dp)
                         .align(Alignment.End),
                 ) {
-                    if (text.isEmpty()) {
-                        return@DeleteKey
+                    if (text.isNotEmpty()) {
+                        onValueChanged(text.dropLast(1))
                     }
-                    onValueChanged(text.drop(1))
                 }
             }
         },

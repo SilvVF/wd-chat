@@ -6,11 +6,14 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.silv.feature_search_users.use_case.ConnectToDeviceUseCase
 import io.silv.feature_search_users.use_case.ObserveWifiDirectEventsUseCase
+import io.silv.feature_search_users.use_case.RefreshDeviceListUseCase
 import io.silv.feature_search_users.use_case.StartDiscoveryUseCase
 import io.silv.shared_ui.utils.EventViewModel
 import io.silv.wifi_direct.WifiP2pEvent
+import io.silv.wifi_direct.types.P2pError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -20,14 +23,40 @@ import javax.inject.Inject
 class SearchUsersViewModel @Inject constructor(
     private val wifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase,
     private val connectToDeviceUseCase: ConnectToDeviceUseCase,
-    private val startDiscovery: StartDiscoveryUseCase
+    private val startDiscovery: StartDiscoveryUseCase,
+    private val refreshDeviceListUseCase: RefreshDeviceListUseCase
 ): EventViewModel<SearchUsersEvent>() {
 
 
     private val mutableDevices = MutableStateFlow<List<WifiP2pDevice>>(emptyList())
+    private val mutableCode = MutableStateFlow("")
+    private val mutableNetworkName = MutableStateFlow("")
+    private val mutableRefreshFlow = MutableStateFlow(false)
+
+    val networkName = mutableNetworkName
+        .asStateFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), "")
+
+    val code = mutableCode
+        .asStateFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), "")
+
+    val refreshing = mutableRefreshFlow
+        .asStateFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
+
+    data class UiDevice(
+        val name: String,
+        val mac: String,
+    )
 
     val users = mutableDevices.map { list ->
-        list.mapNotNull { device -> device.deviceName }
+        list.map { device ->
+            UiDevice(
+                name = device.deviceName,
+                mac = device.deviceAddress,
+            )
+        }
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
@@ -42,20 +71,32 @@ class SearchUsersViewModel @Inject constructor(
             ?.let { device ->
                 connectToDeviceUseCase(device) {
                     setDeviceAddress(MacAddress.fromString(device.deviceAddress))
-
+                    setPassphrase(code.value)
+                    setNetworkName(networkName.value)
                 }.onRight {
                     eventChannel.send(
-                        SearchUsersEvent.ShowToast("connected")
+                        SearchUsersEvent.ShowSnackbar("connected")
                     )
                 }
                     .onLeft {error ->
                         eventChannel.send(
-                            SearchUsersEvent.ShowToast(error.message)
+                            SearchUsersEvent.ShowSnackbar(error.message)
                         )
                     }
             }
     }
 
+    val codeLength = 8
+
+    fun changeCode(code: String) = viewModelScope.launch {
+        if(code.length <= codeLength && code.all { it.isDigit() }) {
+            mutableCode.emit(code)
+        }
+    }
+
+    fun changeNetworkName(name: String) = viewModelScope.launch {
+        mutableNetworkName.emit(name)
+    }
 
     private fun observeWifiDirectEvents() = viewModelScope.launch {
         wifiDirectEventsUseCase().collect { event ->
@@ -73,7 +114,6 @@ class SearchUsersViewModel @Inject constructor(
                         )
                     }
                 }
-                is WifiP2pEvent.DiscoveryChanged -> Unit
                 is WifiP2pEvent.PeersChanged -> {
                     mutableDevices.emit(event.peers)
                 }
@@ -84,19 +124,35 @@ class SearchUsersViewModel @Inject constructor(
                         eventChannel.send(SearchUsersEvent.WifiP2pDisabled)
                     }
                 }
-                WifiP2pEvent.ThisDeviceChanged -> {
-                    // TODO()
-                }
-                WifiP2pEvent.Unknown -> Unit
+                else -> Unit
             }
         }
+    }
+
+    fun onPullToRefresh() = viewModelScope.launch {
+        refreshDeviceListUseCase()
+            .onRight { deviceList ->
+                if (deviceList.isNotEmpty()) {
+                    mutableDevices.emit(deviceList)
+                }
+            }
+            .onLeft {
+                when (it) {
+                    is P2pError.GenericError -> eventChannel.send(
+                        SearchUsersEvent.ShowSnackbar(it.message)
+                    )
+                    is P2pError.MissingPermission -> eventChannel.send(
+                        SearchUsersEvent.MissingPermissions
+                    )
+                }
+            }
     }
 
     private fun startSearchingNearbyDevices() = viewModelScope.launch {
         startDiscovery()
             .onLeft {
                 eventChannel.send(
-                    SearchUsersEvent.ShowToast(it.message)
+                    SearchUsersEvent.ShowSnackbar(it.message)
                 )
             }
     }
@@ -108,9 +164,12 @@ class SearchUsersViewModel @Inject constructor(
 }
 
 sealed class SearchUsersEvent {
+
+    object MissingPermissions: SearchUsersEvent()
+
     object WifiP2pDisabled: SearchUsersEvent()
 
-    data class ShowToast(val text: String): SearchUsersEvent()
+    data class ShowSnackbar(val text: String): SearchUsersEvent()
 
     data class JoinedGroup(
         val isGroupOwner: Boolean,

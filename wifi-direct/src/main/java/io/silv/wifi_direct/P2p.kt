@@ -24,6 +24,8 @@ interface P2p {
 
     suspend fun connect(device: WifiP2pDevice,  config: WifiP2pConfig.Builder.() -> Unit = {}): Either<P2pError, Boolean>
 
+    suspend fun requestDeviceList(): Either<P2pError, List<WifiP2pDevice>>
+
     suspend fun createGroup(
         passPhrase: String,
         networkName: String

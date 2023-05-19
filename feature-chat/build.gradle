@@ -61,6 +61,8 @@ dependencies {
             project(":datastore")
     )
 
+    implementation libs.lottie.compose
+
     //Arrow
     implementation(libs.arrow.core)
     implementation(libs.arrow.fx)

@@ -3,10 +3,12 @@
 package io.silv.feature_chat
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,9 +17,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import io.silv.feature_chat.components.ConfirmLeavePopup
 import io.silv.feature_chat.components.ConversationContent
 
@@ -71,7 +79,7 @@ fun ChatScreen(
                 viewModel.startChatServer(isGroupOwner, groupOwnerAddress)
             },
             navigateBack = {
-
+                navigateBack()
             }
         )
         is ChatUiState.Loading -> ChatLoadingScreen()
@@ -80,8 +88,14 @@ fun ChatScreen(
 
 @Composable
 fun ChatLoadingScreen() {
-    Surface(Modifier.fillMaxSize()) {
-        CircularProgressIndicator()
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.primaryContainer
+    ) {
+        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading_server_dots))
+        val progress by animateLottieCompositionAsState(composition)
+
+        LottieAnimation(composition = composition, progress = { progress })
     }
 }
 @Composable
@@ -89,10 +103,33 @@ fun ChatErrorScreen(
     retry: () -> Unit,
     navigateBack: () -> Unit
 ) {
-    Surface(Modifier.fillMaxSize()) {
-        Text(text = "Error Occured")
-        Button(onClick = { retry() }) {
-            Text(text = "Retry")
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.errorContainer
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(id = R.string.error_connecting),
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
+            OutlinedButton(
+                onClick = { retry() }
+            ) {
+                Text(
+                    text = stringResource(id = R.string.retry)
+                )
+            }
+            OutlinedButton(
+                onClick = { navigateBack() }
+            ) {
+                Text(
+                    text = stringResource(id = R.string.navigate_back)
+                )
+            }
         }
     }
 }

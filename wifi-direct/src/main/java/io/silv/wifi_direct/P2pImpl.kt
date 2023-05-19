@@ -32,6 +32,18 @@ internal class P2pImpl(
             //handle disconnect
         }
 
+    @Suppress("MissingPermissions")
+    override suspend fun requestDeviceList(): Either<P2pError, List<WifiP2pDevice>> {
+        return Either.catch {
+            requestPeersCallbackFlow.first()
+        }.mapLeft { throwable ->
+            permissionsCheck()?.let {
+                return@mapLeft it
+            }
+            P2pError.GenericError(throwable.localizedMessage ?: "Unknown Error")
+        }
+    }
+
     override suspend fun requestGroupInfo(): Either<P2pError, WifiP2pGroup> {
         return Either.catch {
             groupInfoCallback.first()
@@ -91,6 +103,15 @@ internal class P2pImpl(
             permissionsCheck()?.let { return@mapLeft it }
             P2pError.GenericError(throwable.localizedMessage ?: "")
         }
+    }
+
+
+    @SuppressLint("MissingPermission")
+    private val requestPeersCallbackFlow = callbackFlow {
+        wifiP2pManager.requestPeers(this@P2pImpl.channel) { peers ->
+            trySendBlocking(peers.deviceList.toList())
+        }
+        awaitClose()
     }
 
     @SuppressLint("MissingPermission")

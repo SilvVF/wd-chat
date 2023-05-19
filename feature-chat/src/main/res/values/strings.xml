@@ -10,4 +10,9 @@
         and images that were sent in the chat that have not been saved on the device.
     </string>
     <string name="disconnect_btn_text">confirm disconnect</string>
+    <string name="error_connecting">an error occurred while trying to connect to the group owner.
+        tap the screen to retry connecting or tap the back button to search for a different group.
+    </string>
+    <string name="retry">retry</string>
+    <string name="navigate_back">navigate back to home</string>
 </resources>

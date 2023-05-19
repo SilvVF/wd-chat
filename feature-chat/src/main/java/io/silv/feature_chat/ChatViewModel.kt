@@ -24,11 +24,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,7 +47,7 @@ class ChatViewModel @Inject constructor(
     private val imageAttachments = MutableStateFlow(emptyList<Uri>())
     private val users = MutableStateFlow<Map<String, UiUserInfo>>(emptyMap())
     private val message = MutableStateFlow(savedStateHandle["message"] ?: "")
-
+    private var groupOwner = false
 
     val chatUiState = combine(
         mutableChatFlow,
@@ -90,9 +88,15 @@ class ChatViewModel @Inject constructor(
                     is WifiP2pEvent.ConnectionChanged -> {
                         if (!event.p2pInfo.groupFormed) {
                             eventChannel.send(ChatEvent.LostConnectionToGroup)
+                        } else {
+                            connectToChatUseCase(
+                                event.p2pInfo.isGroupOwner,
+                                event.p2pInfo.groupOwnerAddress
+                                    .toString()
+                                    .replace('/', ' ')
+                            )
                         }
                     }
-
                     else -> Unit
                 }
             }

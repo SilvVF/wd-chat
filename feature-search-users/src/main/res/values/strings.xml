@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="back">navigate back</string>
+    <string name="title">search for users</string>
+    <string name="connect_hint">tap on a card to connect to the device</string>
+    <string name="code_hint">tap to enter a code</string>
+    <string name="code_explanation">This should match the code entered on the device you are trying to connect to.
+    The code may be bypassed if the other device supports push button configuration. In that case the other device will see
+        a popup that they will need to accept in order for you to connect.
+    </string>
+    <string name="net_name_hint">enter the network name</string>
+    <string name="net_name_support">network name</string>
+</resources>

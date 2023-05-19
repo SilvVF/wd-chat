@@ -11,9 +11,11 @@ import dagger.hilt.android.scopes.ViewModelScoped
 import io.silv.feature_search_users.SearchUsersViewModel
 import io.silv.feature_search_users.use_case.ConnectToDeviceUseCase
 import io.silv.feature_search_users.use_case.ObserveWifiDirectEventsUseCase
+import io.silv.feature_search_users.use_case.RefreshDeviceListUseCase
 import io.silv.feature_search_users.use_case.StartDiscoveryUseCase
 import io.silv.feature_search_users.use_case.connectToDeviceUseCaseImpl
 import io.silv.feature_search_users.use_case.observeWifiDirectEventsUseCaseImpl
+import io.silv.feature_search_users.use_case.refreshDeviceListUseCaseImpl
 import io.silv.feature_search_users.use_case.startDiscoveryUseCaseImpl
 import io.silv.wifi_direct.P2p
 import io.silv.wifi_direct.WifiP2pReceiver
@@ -28,10 +30,12 @@ object SearchUserModule {
         wifiDirectEventsUseCase: ObserveWifiDirectEventsUseCase,
         connectToDeviceUseCase: ConnectToDeviceUseCase,
         startDiscoveryUseCase: StartDiscoveryUseCase,
+        refreshDeviceListUseCase: RefreshDeviceListUseCase
     ): SearchUsersViewModel = SearchUsersViewModel(
         wifiDirectEventsUseCase = wifiDirectEventsUseCase,
         connectToDeviceUseCase = connectToDeviceUseCase,
-        startDiscovery = startDiscoveryUseCase
+        startDiscovery = startDiscoveryUseCase,
+        refreshDeviceListUseCase = refreshDeviceListUseCase
     )
 
     @Provides
@@ -42,6 +46,13 @@ object SearchUserModule {
         return P2p.getImpl(context, wifiP2pManager)
     }
 
+    @ViewModelScoped
+    @Provides
+    fun provideRefreshDeviceLiseUseCase(
+        p2p: P2p
+    ) = RefreshDeviceListUseCase {
+        refreshDeviceListUseCaseImpl(p2p)
+    }
 
     @ViewModelScoped
     @Provides

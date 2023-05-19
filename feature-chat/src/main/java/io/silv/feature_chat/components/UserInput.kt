@@ -2,14 +2,13 @@ package io.silv.feature_chat.components
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import android.os.Build
 import android.view.View.OnFocusChangeListener
 import android.widget.EditText
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,8 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -50,8 +47,6 @@ import androidx.core.util.component1
 import androidx.core.util.component2
 import androidx.core.view.OnReceiveContentListener
 import androidx.core.view.ViewCompat
-import androidx.core.view.marginBottom
-import androidx.core.view.setPadding
 import androidx.core.widget.doOnTextChanged
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -85,7 +80,6 @@ fun UserInput(
             )
         }
     ) {
-
         AttachmentList(attachments = attachments, onDeleteAttachment = onDeleteAttachment)
         ChatBar(
                 text = text,
@@ -173,6 +167,9 @@ fun AttachmentList(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .clip(RoundedCornerShape(12.dp))
                 .padding(4.dp)
+                .clickable {
+                    onDeleteAttachment(uri)
+                }
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)

@@ -2,7 +2,7 @@
 buildscript {
     ext {
         kotlin_version = '1.8.0'
-        destinations_version = '1.7.41-beta'
+        destinations_version = '1.8.41-beta'
     }
     repositories {
         // other repositories...
@@ -15,7 +15,6 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
-
 
 plugins {
     id 'com.android.application' version '8.0.1' apply false

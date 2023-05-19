@@ -1,19 +1,10 @@
 package io.silv.wifidirectchat.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.airbnb.lottie.compose.LottieAnimation
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
@@ -92,7 +83,8 @@ fun CreateGroup(
     navigator: DestinationsNavigator
 ) {
     CreateGroupScreen(
-        missingPermission = { navigator.navigate(OnboardDestination) }
+        missingPermission = { navigator.navigate(OnboardDestination) },
+        navigateBack = { navigator.navigate(HomeDestination) }
     ) { isGroupOwner, groupOwnerAddress ->
         navigator.navigate(
             ChatDestination(isGroupOwner, groupOwnerAddress)
@@ -105,11 +97,13 @@ fun CreateGroup(
 fun SearchUsers(
     navigator: DestinationsNavigator
 ) {
-    SearchUsersScreen { isGroupOwner, groupOwnerAddress ->
-        navigator.navigate(
-            ChatDestination(isGroupOwner, groupOwnerAddress)
-        )
-    }
+    SearchUsersScreen(
+        navigateBack = { navigator.navigate(HomeDestination) },
+        joinedGroup = { isGroupOwner, groupOwnerAddress ->
+            navigator.navigate(ChatDestination(isGroupOwner, groupOwnerAddress))
+        },
+        missingPermissions = { navigator.navigate(OnboardDestination) }
+    )
 }
 
 

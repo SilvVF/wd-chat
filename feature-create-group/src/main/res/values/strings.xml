@@ -6,4 +6,6 @@
     <string name="network_name_hint">enter a network name</string>
     <string name="network_name">network name</string>
     <string name="create_group_btn_label">tap to create a group</string>
+    <string name="title_create_group">create a group</string>
+    <string name="back">back</string>
 </resources>
