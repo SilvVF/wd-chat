@@ -11,6 +11,8 @@ import android.net.wifi.p2p.WifiP2pManager.ActionListener
 import android.os.Looper
 import arrow.core.Either
 import io.silv.wifi_direct.types.P2pError
+import io.silv.wifi_direct.util.locationPerms
+import io.silv.wifi_direct.util.nearbyDevicePerms
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
@@ -20,7 +22,7 @@ import kotlinx.coroutines.flow.first
 
 
 internal class P2pImpl(
-    ctx: Context,
+    private val ctx: Context,
     private val wifiP2pManager: WifiP2pManager,
 ): P2p {
 
@@ -34,7 +36,10 @@ internal class P2pImpl(
         return Either.catch {
             groupInfoCallback.first()
         }.mapLeft { throwable ->
-            P2pError.GenericError(throwable.message ?: "")
+            permissionsCheck()?.let {
+                return@mapLeft it
+            }
+            P2pError.GenericError(throwable.localizedMessage ?: "Unknown Error")
         }
     }
 
@@ -42,7 +47,8 @@ internal class P2pImpl(
         return Either.catch {
             discoverDevicesCallbackFlow.first()
         }.mapLeft {
-            P2pError.GenericError(it.message ?: "unknown error")
+            permissionsCheck()?.let { return@mapLeft it }
+            P2pError.GenericError(it.localizedMessage ?: "Unknown error")
         }
     }
 
@@ -67,6 +73,7 @@ internal class P2pImpl(
                     }
             ).first()
         }.mapLeft {
+            permissionsCheck()?.let { return@mapLeft it }
             P2pError.GenericError(it.message ?: "unknown error")
         }
     }
@@ -81,7 +88,8 @@ internal class P2pImpl(
                 passPhrase = passPhrase
             ).first()
         }.mapLeft { throwable ->
-            P2pError.GenericError(throwable.message ?: "")
+            permissionsCheck()?.let { return@mapLeft it }
+            P2pError.GenericError(throwable.localizedMessage ?: "")
         }
     }
 
@@ -93,13 +101,18 @@ internal class P2pImpl(
                 }
 
                 override fun onFailure(p0: Int) {
-                    close(cause = IllegalStateException())
+                    close(
+                        cause = IllegalStateException(
+                            getErrorMessage(p0)
+                        )
+                    )
                 }
             })
         awaitClose()
     }
 
     private val createGroupPrefix = "DIRECT-xy"
+
     @SuppressLint("MissingPermission")
     private fun createGroupCallbackFlow(networkName: String, passPhrase: String) = callbackFlow {
         wifiP2pManager.createGroup(
@@ -113,7 +126,11 @@ internal class P2pImpl(
                     trySendBlocking(true)
                 }
                 override fun onFailure(p0: Int) {
-                    close(IllegalStateException())
+                    close(
+                        IllegalStateException(
+                           getErrorMessage(p0)
+                        )
+                    )
                 }
         })
         awaitClose()
@@ -133,5 +150,26 @@ internal class P2pImpl(
                 }
             )
             awaitClose()
+    }
+
+    private fun getErrorMessage(code: Int) =  when(code) {
+        WifiP2pManager.P2P_UNSUPPORTED -> "Wifi P2P UNSUPPORTED try enabling wifi p2p in settings"
+        WifiP2pManager.ERROR ->  "Wifi P2P ERROR"
+        WifiP2pManager.BUSY ->  "Wifi P2P BUSY try disconnecting from settings or restart app"
+        else -> "Unknown Error"
+    }
+
+    private fun permissionsCheck(): P2pError.MissingPermission? {
+        val permissionsMissing = mutableListOf<String>()
+        val locationPermission = locationPerms(ctx).also {
+            if (!it) { permissionsMissing.add("Missing Location Permission") }
+        }
+        val nearbyDevicePermission = nearbyDevicePerms(ctx).also {
+            if (!it) { permissionsMissing.add("Missing Nearby Device Permission") }
+        }
+        return when {
+            locationPermission && nearbyDevicePermission -> null
+            else -> P2pError.MissingPermission(permissionsMissing.joinToString(" "))
+        }
     }
 }

@@ -58,6 +58,23 @@ internal class ImageRepositoryImpl(
         }
     }
 
+    override suspend fun writeProfilePicture(uri: Uri): Uri {
+        mutex.tryLock()
+        val ext = getExtFromUri(uri)
+        val fileName = "profile_picture-${UUID.randomUUID()}.$ext"
+        val attachment = File(dir, fileName)
+        dir.mkdirs()
+        cr.openInputStream(uri).use { stream ->
+            stream?.let {
+                attachment.writeBytes(stream.readBytes())
+            }
+        }
+        return getUriFromFile(attachment).also {
+            runCatching { mutex.unlock() }
+            Log.d("IMAGE_REPOSITORY", "saved content original uri $uri, new uri $it")
+        }
+    }
+
     override suspend fun writeChat(byteArray: ByteArray, ext: String): Uri {
         mutex.tryLock()
         val fileName = "chat_attachments-${UUID.randomUUID()}.$ext"
@@ -111,6 +128,9 @@ internal class ImageRepositoryImpl(
      */
     override suspend fun clear(): Boolean = mutex.withLock {
         dir.listFiles()?.onEach {
+            if(it.absolutePath.contains("profile_picture")) {
+                return@onEach
+            }
             if(!it.delete()) {
                 return false
             }

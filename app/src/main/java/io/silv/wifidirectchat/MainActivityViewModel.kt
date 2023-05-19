@@ -30,7 +30,7 @@ class MainActivityViewModel @Inject constructor(
 
    val profilePictureFlow = flow {
        datastore.readProfilePictureUri().collect {
-           emit(it ?: return@collect)
+           it?.let { emit(it) }
        }
    }
 

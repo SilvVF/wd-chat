@@ -14,9 +14,12 @@ import io.silv.feature_chat.use_case.ConnectToChatUseCase
 import io.silv.feature_chat.use_case.DeleteAttachmentUseCase
 import io.silv.feature_chat.use_case.ObserveWifiDirectEventsUseCase
 import io.silv.feature_chat.use_case.SendChatUseCase
+import io.silv.feature_chat.use_case.ShutdownServerUseCase
 import io.silv.feature_chat.use_case.WriteToAttachmentsUseCase
 import io.silv.shared_ui.utils.EventViewModel
 import io.silv.wifi_direct.WifiP2pEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -25,6 +28,7 @@ import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -37,6 +41,7 @@ class ChatViewModel @Inject constructor(
     private val writeToAttachmentsUseCase: WriteToAttachmentsUseCase,
     private val deleteAttachmentUseCase: DeleteAttachmentUseCase,
     private val datastore: EncryptedDatastore,
+    private val shutdownServerUseCase: ShutdownServerUseCase
 ): EventViewModel<ChatEvent>() {
 
     private val mutableChatFlow = MutableStateFlow(emptyList<Chat>())
@@ -92,6 +97,10 @@ class ChatViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun shutdownServer() = viewModelScope.launch {
+        shutdownServerUseCase()
     }
 
     fun handleMessageChanged(text: String) = viewModelScope.launch {
@@ -159,6 +168,13 @@ class ChatViewModel @Inject constructor(
         mutableChatFlow.getAndUpdate { list ->
             list + chat
         }
+    }
+
+    override fun onCleared() {
+        CoroutineScope(Dispatchers.IO).launch {
+            shutdownServerUseCase()
+        }
+        super.onCleared()
     }
 }
 

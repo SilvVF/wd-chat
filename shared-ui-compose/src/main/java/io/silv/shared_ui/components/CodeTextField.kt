@@ -4,11 +4,14 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
@@ -16,20 +19,38 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun CodeTextField(
     text: String,
     onValueChanged: (String) -> Unit,
     maxTextLength: Int,
+    rows: Int,
     modifier: Modifier = Modifier
 ) {
+    val imeController = LocalSoftwareKeyboardController.current
+    val rowSize = remember(rows, maxTextLength) {
+        (maxTextLength / rows).coerceAtLeast(1)
+    }
+
+    val chunkedList by remember(text) {
+        derivedStateOf {
+           List(maxTextLength){ text.getOrNull(it) }.chunked(rowSize)
+        }
+    }
 
     BasicTextField(
         value = text,
@@ -39,31 +60,49 @@ fun CodeTextField(
             }
         },
         decorationBox = { innerTextField ->
-            Row {
-                text.forEachIndexed { idx, char ->
-                    CodeCharBox(char = char, idx == text.lastIndex)
-                }
-                for (i in 0 until maxTextLength - text.length) {
-                    EmptyCharBox()
-                }
-                DeleteKey {
-                    if (text.isNotEmpty()) {
-                        onValueChanged(text.dropLast(1))
+            Column {
+                chunkedList.forEachIndexed { chunkIdx, chunk ->
+                    Row {
+                        chunk.forEachIndexed { index, c ->
+                            val idx = chunkIdx * index
+                            if (c != null) {
+                                CodeCharBox(char = c, focused = idx == text.lastIndex)
+                            } else {
+                                EmptyCharBox()
+                            }
+                        }
                     }
                 }
+                DeleteKey(
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .size(50.dp)
+                        .align(Alignment.End),
+                ) {
+                    if (text.isEmpty()) {
+                        return@DeleteKey
+                    }
+                    onValueChanged(text.drop(1))
+                }
             }
-        }
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        ),
+        keyboardActions = KeyboardActions(
+            onDone = { imeController?.hide() }
+        )
     )
 }
 
 @Composable
 private fun DeleteKey(
+    modifier: Modifier = Modifier,
     delete: () -> Unit
 ) {
     Box(
-        modifier = Modifier
-            .padding(4.dp)
-            .size(50.dp),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         IconButton(onClick = { delete() }) {

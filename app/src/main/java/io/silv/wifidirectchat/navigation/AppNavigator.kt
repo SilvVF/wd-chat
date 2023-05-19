@@ -47,7 +47,9 @@ fun Chat(
     ChatScreen(
         isGroupOwner = isGroupOwner,
         groupOwnerAddress = groupOwnerAddress
-    )
+    ) {
+        navigator.navigate(HomeDestination)
+    }
 }
 
 @RootNavGraph(start = true)
@@ -66,6 +68,7 @@ fun Splash(
             else -> Unit
         }
     }
+
     SplashScreen()
 }
 
@@ -88,7 +91,9 @@ fun Onboard(
 fun CreateGroup(
     navigator: DestinationsNavigator
 ) {
-    CreateGroupScreen { isGroupOwner, groupOwnerAddress ->
+    CreateGroupScreen(
+        missingPermission = { navigator.navigate(OnboardDestination) }
+    ) { isGroupOwner, groupOwnerAddress ->
         navigator.navigate(
             ChatDestination(isGroupOwner, groupOwnerAddress)
         )

@@ -14,12 +14,14 @@ import io.silv.feature_chat.use_case.ConnectToChatUseCase
 import io.silv.feature_chat.use_case.DeleteAttachmentUseCase
 import io.silv.feature_chat.use_case.ObserveWifiDirectEventsUseCase
 import io.silv.feature_chat.use_case.SendChatUseCase
+import io.silv.feature_chat.use_case.ShutdownServerUseCase
 import io.silv.feature_chat.use_case.WriteToAttachmentsUseCase
 import io.silv.feature_chat.use_case.collectChatUseCaseImpl
 import io.silv.feature_chat.use_case.connectToChatUseCaseImpl
 import io.silv.feature_chat.use_case.deleteAttachmentUseCaseImpl
 import io.silv.feature_chat.use_case.observeWifiDirectEventsUseCaseImpl
 import io.silv.feature_chat.use_case.sendChatUseCaseImpl
+import io.silv.feature_chat.use_case.shutdownServerUseCaseImpl
 import io.silv.feature_chat.use_case.writeToAttachmentsUseCaseImpl
 import io.silv.image_store.ImageRepository
 import io.silv.wifi_direct.WifiP2pReceiver
@@ -40,7 +42,8 @@ object ChatModule {
         sendChatUseCase: SendChatUseCase,
         writeToAttachmentsUseCase: WriteToAttachmentsUseCase,
         deleteAttachmentUseCase: DeleteAttachmentUseCase,
-        datastore: EncryptedDatastore
+        datastore: EncryptedDatastore,
+        shutdownServerUseCase: ShutdownServerUseCase
     ): ChatViewModel = ChatViewModel(
         observeWifiDirectEventsUseCase = observeWifiDirectEventsUseCase,
         connectToChatUseCase = connectToChatUseCase,
@@ -49,7 +52,8 @@ object ChatModule {
         writeToAttachmentsUseCase = writeToAttachmentsUseCase,
         deleteAttachmentUseCase = deleteAttachmentUseCase,
         datastore = datastore,
-        savedStateHandle = savedStateHandle
+        savedStateHandle = savedStateHandle,
+        shutdownServerUseCase = shutdownServerUseCase
     )
 
     @ViewModelScoped
@@ -66,6 +70,14 @@ object ChatModule {
         receiver: WifiP2pReceiver
     ) = ObserveWifiDirectEventsUseCase {
         observeWifiDirectEventsUseCaseImpl(receiver)
+    }
+
+    @ViewModelScoped
+    @Provides
+    fun provideShutdownServerUseCase(
+        websocketRepo: WebsocketRepo
+    ) = ShutdownServerUseCase {
+        shutdownServerUseCaseImpl(websocketRepo)
     }
 
     @ViewModelScoped

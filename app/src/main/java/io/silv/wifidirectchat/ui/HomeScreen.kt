@@ -1,6 +1,7 @@
 package io.silv.wifidirectchat.ui
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,9 +47,13 @@ fun HomeScreen(
     navigate: (Direction) -> Unit
 ) {
 
-    val profilePicture by viewModel.profilePictureFlow.collectAsStateWithLifecycle(initialValue = Uri.EMPTY)
+    val profilePicture = viewModel.profilePictureFlow.collectAsStateWithLifecycle(initialValue = Uri.EMPTY)
     val username by viewModel.usernameFlow.collectAsStateWithLifecycle(initialValue = "")
     val screenHeight = LocalConfiguration.current.screenHeightDp
+
+    BackHandler {
+        
+    }
 
     Scaffold(
         modifier = Modifier
@@ -78,7 +83,7 @@ fun HomeScreen(
                         CircleShape
                     ),
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(profilePicture)
+                    .data(profilePicture.value)
                     .crossfade(true)
                     .build(),
                 contentScale = ContentScale.Crop,

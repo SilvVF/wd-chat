@@ -10,6 +10,8 @@ interface ImageRepository {
 
     suspend fun write(uri: Uri): Uri
 
+    suspend fun writeProfilePicture(uri: Uri): Uri
+
     suspend fun writeChat(byteArray: ByteArray, ext: String): Uri
 
     suspend fun writeAll(vararg uris: Uri) = uris.map { uri -> write(uri) }

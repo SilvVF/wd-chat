@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="passcode_blank_error">the passcode cannot be blank</string>
+    <string name="passcode_to_short_error">the passcode needs to be %1$d characters long</string>
+    <string name="passcode_hint">tap the boxes to enter a passcode.</string>
+    <string name="network_name_hint">enter a network name</string>
+    <string name="network_name">network name</string>
+    <string name="create_group_btn_label">tap to create a group</string>
+</resources>

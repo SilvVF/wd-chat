@@ -19,3 +19,5 @@ fun interface CollectChatUseCase: () -> Either<Throwable, Flow<UiWsData>>
 fun interface WriteToAttachmentsUseCase: suspend (Uri) -> Uri
 
 fun interface DeleteAttachmentUseCase: suspend (Uri) -> Unit
+
+fun interface ShutdownServerUseCase: suspend() -> Unit

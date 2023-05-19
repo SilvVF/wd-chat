@@ -31,6 +31,12 @@ internal suspend fun writeToAttachmentsUseCaseImpl(
     return ir.write(uri)
 }
 
+internal suspend fun shutdownServerUseCaseImpl(
+    websocketRepo: WebsocketRepo
+) {
+    websocketRepo.stopConnection()
+}
+
 internal suspend fun deleteAttachmentUseCaseImpl(uri: Uri, imageRepository: ImageRepository) {
     imageRepository.delete(uri)
 }

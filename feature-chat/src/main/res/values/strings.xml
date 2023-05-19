@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="confirm_leave_text_owner">
+        Navigating back will shutdown the server and will not allow any more messages to be sent.
+        this will also get rid of any of the messages sent and images downloaded as part of the chat.
+        If you would like to go back press the confirmation button below.
+    </string>
+    <string name="confirm_leave_text">
+        Navigating back will disconnect you from the server. This will also delete all of the messages
+        and images that were sent in the chat that have not been saved on the device.
+    </string>
+    <string name="disconnect_btn_text">confirm disconnect</string>
+</resources>

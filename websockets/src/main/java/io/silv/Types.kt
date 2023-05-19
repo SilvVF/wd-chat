@@ -20,6 +20,7 @@ sealed class WsData(
     val id: String = userId
 )
 
+
 @Serializable
 @SerialName(ChatMessage.typeName)
 data class ChatMessage(
