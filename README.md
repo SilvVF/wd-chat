@@ -11,13 +11,16 @@
 - Allows keyboard image support and Sticker support. 
 
 ## Tech Stack 
-[Dagger Hilt](https://dagger.dev/hilt/)
-[Ktor server + Ktor Client](https://ktor.io/)
-[Lottie Compose](https://github.com/airbnb/lottie/blob/master/android-compose.md)
-[Coil](https://coil-kt.github.io/coil/compose/)
-[Jetpack Datastore](https://developer.android.com/jetpack/androidx/releases/datastore)
-[KotlinxSerialization](https://kotlinlang.org/docs/serialization.html)
-[Coroutines + Flow](https://kotlinlang.org/docs/coroutines-overview.html)
+- [Dagger Hilt](https://dagger.dev/hilt/)
+- [Ktor server + Ktor Client](https://ktor.io/)
+- [Lottie Compose](https://github.com/airbnb/lottie/blob/master/android-compose.md)
+- [Coil](https://coil-kt.github.io/coil/compose/)
+- [Jetpack Datastore](https://developer.android.com/jetpack/androidx/releases/datastore)
+- [KotlinxSerialization](https://kotlinlang.org/docs/serialization.html)
+- [Coroutines + Flow](https://kotlinlang.org/docs/coroutines-overview.html)
+- [Jetpack Compose](https://developer.android.com/jetpack/compose)
+- [Compose Destinations](https://composedestinations.rafaelcosta.xyz/)
+- [Arrow]("https://arrow-kt.io/")
 
 ## Project Architecture
 The App uses MVVM architecture and exposes the data to the jetpack comopse UI using kotlin Flow.
