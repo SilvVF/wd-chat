@@ -22,6 +22,7 @@
 - [Compose Destinations](https://composedestinations.rafaelcosta.xyz/)
 - [Arrow]("https://arrow-kt.io/")
 
+
 ## Project Architecture
 The App uses MVVM architecture and exposes the data to the jetpack comopse UI using kotlin Flow.
 Every viewmodel also has a way of passing effects down to the Compose Ui elements from the EventViewmodel that utalizes Channels.
