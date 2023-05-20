@@ -10,4 +10,4 @@
 - All images are stored locally and will be deleted after if not saved.
 
 ## Tech Stack 
-![Dagger Hilt](https://dagger.dev/hilt/)
+[Dagger Hilt](https://dagger.dev/hilt/)
