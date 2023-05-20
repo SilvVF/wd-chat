@@ -24,14 +24,14 @@
 
 
 ## Project Architecture
-The App uses MVVM architecture and exposes the data to the jetpack comopse UI using kotlin Flow.
-Every viewmodel also has a way of passing effects down to the Compose Ui elements from the EventViewmodel that utalizes Channels.
+The App uses MVVM architecture and exposes the data using a unidirectional flow down to the jetpack comopse UI. this is accomplished
+through kotlin flows. Every viewmodel also has a way of passing effects down to the Compose Ui elements from the EventViewmodel that utalizes Channels.
 
 ### Modules
 The app is divided into seperate feature modules as show in the dependency graph above. 
 The modules that are not labled feature are common utilities that are shared between the different feature modules.
 
-### Featrue Structure
+### Feature Structure
 Each feature module contains a compose-ui screen that uses the jetpack viewmodel to hold its state. The viewmodels used extend EventViewmodel which provides a channel that can be used to emit sideeffects to the ui such as showing snackbars. Each viewmodel is responsible for making calls to the business logic through usecases provided to it. The use cases are devided into a functional interface and a function defining its implementation. This allows for a nice interop with dagger hilt to provide the use cases to the viewmodel. 
 
 ## Gradle / Dependencies 
