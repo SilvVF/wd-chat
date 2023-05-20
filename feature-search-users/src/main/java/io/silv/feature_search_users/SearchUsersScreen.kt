@@ -110,7 +110,6 @@ fun SearchUsersScreen(
     ) { paddingValues ->
 
         val refreshing by viewModel.refreshing.collectAsState()
-        val pagerSate = rememberPagerState(1)
         val pullRefreshState = rememberPullRefreshState(
             refreshing = refreshing,
             onRefresh = { viewModel.onPullToRefresh() }
@@ -123,16 +122,6 @@ fun SearchUsersScreen(
                     .padding(paddingValues),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                PagerCodeAndNetworkName(
-                    code = viewModel.code.collectAsState().value,
-                    codeHint = stringResource(id = R.string.code_hint),
-                    codeExplanation = stringResource(id = R.string.code_explanation),
-                    networkName = viewModel.networkName.collectAsState().value,
-                    networkNameHint = stringResource(id = R.string.net_name_hint),
-                    networkNameExplanation = stringResource(id = R.string.net_name_support),
-                    onCodeValueChange = { viewModel.changeCode(it) },
-                    onNetworkNameValueChange = { viewModel.changeNetworkName(it) }
-                )
                 Text(
                     text = stringResource(id = R.string.connect_hint)
                 )

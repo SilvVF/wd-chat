@@ -28,7 +28,7 @@ internal suspend fun connectToDeviceUseCaseImpl(
     p2p: P2p,
     wifiP2pDevice: WifiP2pDevice,
     config: WifiP2pConfig.Builder.() -> Unit
-): Either<P2pError, Boolean> = p2p.connect(wifiP2pDevice, config)
+): Either<P2pError, Boolean> = runCatching { p2p.connect(wifiP2pDevice, config) }.getOrDefault(Either.Left(P2pError.GenericError("Unknown Error")))
 
 internal suspend fun refreshDeviceListUseCaseImpl(
     p2p: P2p

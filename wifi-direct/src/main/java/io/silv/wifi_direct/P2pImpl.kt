@@ -44,6 +44,7 @@ internal class P2pImpl(
         }
     }
 
+
     override suspend fun requestGroupInfo(): Either<P2pError, WifiP2pGroup> {
         return Either.catch {
             groupInfoCallback.first()

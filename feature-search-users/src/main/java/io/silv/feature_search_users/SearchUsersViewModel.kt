@@ -33,13 +33,6 @@ class SearchUsersViewModel @Inject constructor(
     private val mutableNetworkName = MutableStateFlow("")
     private val mutableRefreshFlow = MutableStateFlow(false)
 
-    val networkName = mutableNetworkName
-        .asStateFlow()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), "")
-
-    val code = mutableCode
-        .asStateFlow()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), "")
 
     val refreshing = mutableRefreshFlow
         .asStateFlow()
@@ -71,31 +64,12 @@ class SearchUsersViewModel @Inject constructor(
             ?.let { device ->
                 connectToDeviceUseCase(device) {
                     setDeviceAddress(MacAddress.fromString(device.deviceAddress))
-                    setPassphrase(code.value)
-                    setNetworkName(networkName.value)
-                }.onRight {
-                    eventChannel.send(
-                        SearchUsersEvent.ShowSnackbar("connected")
-                    )
-                }
-                    .onLeft {error ->
+                }.onLeft {error ->
                         eventChannel.send(
                             SearchUsersEvent.ShowSnackbar(error.message)
                         )
                     }
             }
-    }
-
-    val codeLength = 8
-
-    fun changeCode(code: String) = viewModelScope.launch {
-        if(code.length <= codeLength && code.all { it.isDigit() }) {
-            mutableCode.emit(code)
-        }
-    }
-
-    fun changeNetworkName(name: String) = viewModelScope.launch {
-        mutableNetworkName.emit(name)
     }
 
     private fun observeWifiDirectEvents() = viewModelScope.launch {

@@ -36,7 +36,7 @@ class ChatWebsocketClient(
         }
     }
 
-    fun start() = scope.launch { startClient() }
+    fun start() = scope.launch {  startClient() }
 
     private suspend fun startClient() = httpClient.webSocket(
         host = address,

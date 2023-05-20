@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">WifiDirectChat</string>
-    <string name="create_group_hint">create group explanation.</string>
+    <string name="create_group_hint">Only use if WIFI P2P is not supported.</string>
     <string name="create_group_explanation">
-        Creating a group will make this device the group owner.
-        This means this device will be the one to host the server which
+        This feature should only be used with devices that dont support WIFI P2P prefer to connect through search users
+        Creating a group will make this device the group owner.This means this device will be the one to host the server which
         could lead to increased power consumption. Creating a group can be used to determine the
         device that will be the server host manually as searching allow the Android system to determine this.
     </string>

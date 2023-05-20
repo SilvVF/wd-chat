@@ -32,7 +32,7 @@ class ChatWebsocketServer(
         Collections.synchronizedSet(LinkedHashSet())
 
     fun start() = scope.launch {
-        kotlin.runCatching {
+        runCatching {
             embeddedServer(
                 factory = Netty,
                 port = serverPort,
@@ -43,6 +43,8 @@ class ChatWebsocketServer(
                 install(Routing)
                 serverWebSockets()
             }.start(true)
+        }.onFailure {
+            it.printStackTrace()
         }
     }
 

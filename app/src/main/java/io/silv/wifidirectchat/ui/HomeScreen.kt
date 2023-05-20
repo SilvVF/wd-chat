@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -13,7 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -38,6 +43,7 @@ import io.silv.shared_ui.components.ExpandableExplanation
 import io.silv.wifidirectchat.MainActivityViewModel
 import io.silv.wifidirectchat.R
 import io.silv.wifidirectchat.navigation.destinations.CreateGroupDestination
+import io.silv.wifidirectchat.navigation.destinations.OnboardDestination
 import io.silv.wifidirectchat.navigation.destinations.SearchUsersDestination
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,19 +97,15 @@ fun HomeScreen(
                     id = io.silv.on_boarding.R.string.profile_pic
                 ),
             )
-            Text(text = username)
-            ExpandableExplanation(
-                hint = stringResource(id = R.string.create_group_hint),
-                explanation = stringResource(id = R.string.create_group_explanation)
-            )
-            OutlinedButton(
-                onClick = { navigate(CreateGroupDestination) }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
-                Text(
-                    text = stringResource(id = R.string.create_group_btn)
-                )
+                Text(text = username)
+                IconButton(onClick = { navigate(OnboardDestination) }) {
+                    Icon(imageVector = Icons.Default.Edit, contentDescription ="Edit Profile")
+                }
             }
-            Spacer(modifier = Modifier.height(32.dp))
             ExpandableExplanation(
                 hint = stringResource(id = R.string.search_users_hint),
                 explanation = stringResource(id = R.string.search_users_explantion)
@@ -113,6 +115,18 @@ fun HomeScreen(
             ) {
                 Text(
                     text = stringResource(id = R.string.search_users_btn)
+                )
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+            ExpandableExplanation(
+                hint = stringResource(id = R.string.create_group_hint),
+                explanation = stringResource(id = R.string.create_group_explanation)
+            )
+            OutlinedButton(
+                onClick = { navigate(CreateGroupDestination) }
+            ) {
+                Text(
+                    text = stringResource(id = R.string.create_group_btn)
                 )
             }
         }

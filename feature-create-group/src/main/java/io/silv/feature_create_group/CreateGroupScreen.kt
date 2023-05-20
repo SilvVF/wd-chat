@@ -54,6 +54,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.silv.shared_ui.components.CodeTextField
+import io.silv.shared_ui.components.PagerCodeAndNetworkName
 import io.silv.shared_ui.utils.collectSideEffect
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -104,19 +105,14 @@ fun CreateGroupScreen(
                 )
             }
             is CreateGroupEvent.PermissionMissing -> missingPermission()
+            is CreateGroupEvent.GroupConnected -> {
+                navigate(event.isGroupOwner, event.groupOwnerAddress)
+            }
         }
     }
 
     val state by viewModel.state.collectAsStateWithLifecycle()
     val keyboard = LocalSoftwareKeyboardController.current
-
-    LaunchedEffect(state.groupOwner, state.groupOwnerAddress) {
-        val groupOwner = state.groupOwner
-        val address = state.groupOwnerAddress
-        if (groupOwner != null && address != null) {
-            navigate(groupOwner, address)
-        }
-    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -161,57 +157,15 @@ fun CreateGroupScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ){
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-            ) {
-                Text(
-                    text = stringResource(id = R.string.passcode_hint)
-                )
-                Spacer(modifier = Modifier.height(22.dp))
-                CodeTextField(
-                    text = state.passcode,
-                    rows = 2,
-                    modifier = Modifier.weight(1f, false),
-                    onValueChanged = { viewModel.changePasscode(it) },
-                    maxTextLength = viewModel.passcodeLength
-                )
-                Spacer(modifier = Modifier.height(32.dp))
-                state.passcodeError?.let {
-                    Text(
-                        text = stringResource(id = it.stringRes, it.args),
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(22.dp))
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .imePadding(),
-                value = state.networkName,
-                singleLine = true,
-                onValueChange = {
-                    viewModel.changeNetworkName(it)
-                },
-                supportingText = {
-                    Text(
-                        text = stringResource(id = R.string.network_name)
-                    )
-                },
-                placeholder = {
-                    Text(
-                        text = stringResource(id = R.string.network_name_hint)
-                    )
-                },
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        keyboard?.hide()
-                    }
-                )
+            PagerCodeAndNetworkName(
+                code = state.passcode,
+                codeHint = stringResource(id = R.string.passcode_hint),
+                codeExplanation = stringResource(id = R.string.passcode_hint),
+                networkName = state.networkName,
+                networkNameHint = stringResource(id = R.string.network_name_hint),
+                networkNameExplanation = stringResource(id = R.string.network_name),
+                onCodeValueChange = { viewModel.changePasscode(it) },
+                onNetworkNameValueChange = { viewModel.changeNetworkName(it) }
             )
             Spacer(modifier = Modifier.height(22.dp))
             AnimatedVisibility(

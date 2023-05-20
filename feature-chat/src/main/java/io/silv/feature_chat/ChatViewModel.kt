@@ -47,7 +47,6 @@ class ChatViewModel @Inject constructor(
     private val imageAttachments = MutableStateFlow(emptyList<Uri>())
     private val users = MutableStateFlow<Map<String, UiUserInfo>>(emptyMap())
     private val message = MutableStateFlow(savedStateHandle["message"] ?: "")
-    private var groupOwner = false
 
     val chatUiState = combine(
         mutableChatFlow,
@@ -89,11 +88,12 @@ class ChatViewModel @Inject constructor(
                         if (!event.p2pInfo.groupFormed) {
                             eventChannel.send(ChatEvent.LostConnectionToGroup)
                         } else {
+                            shutdownServer()
                             connectToChatUseCase(
                                 event.p2pInfo.isGroupOwner,
                                 event.p2pInfo.groupOwnerAddress
                                     .toString()
-                                    .replace('/', ' ')
+                                    .replace("/", "")
                             )
                         }
                     }

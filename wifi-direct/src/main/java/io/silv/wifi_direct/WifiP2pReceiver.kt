@@ -17,11 +17,15 @@ import android.net.wifi.p2p.WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION
 import android.net.wifi.p2p.WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION
 import android.net.wifi.p2p.WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION
 import io.silv.wifi_direct.util.logd
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 
 /**
  * [BroadcastReceiver] for WifiP2p events.
@@ -77,7 +81,7 @@ class WifiP2pReceiver(
                 }
                 else -> WifiP2pEvent.Unknown
             }
-        }
+        }.stateIn(CoroutineScope(Dispatchers.IO), SharingStarted.WhileSubscribed(), WifiP2pEvent.Unknown)
 }
 
 private fun Context.flowBroadcasts(intentFilter: IntentFilter): Flow<Intent> {

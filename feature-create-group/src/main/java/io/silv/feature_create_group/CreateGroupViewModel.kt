@@ -34,22 +34,16 @@ class CreateGroupViewModel @Inject constructor(
         }
     }
     private val networkName = MutableStateFlow("")
-    private val groupOwner = MutableStateFlow<Boolean?>(null)
-    private val groupOwnerAddress = MutableStateFlow<String?>(null)
 
     val state = combine(
         passcode,
         passcodeError,
-        networkName,
-        groupOwner,
-        groupOwnerAddress
-    ) { passcode, passcodeError, networkName, groupOwner, groupOwnerAddress ->
+        networkName
+    ) { passcode, passcodeError, networkName ->
         CreateGroupState(
             passcode = passcode,
             passcodeError = passcodeError,
             networkName = networkName,
-            groupOwner = groupOwner,
-            groupOwnerAddress = groupOwnerAddress
         )
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), CreateGroupState())
@@ -60,11 +54,13 @@ class CreateGroupViewModel @Inject constructor(
                 when(event) {
                     is WifiP2pEvent.ConnectionChanged -> {
                         if (event.p2pInfo.groupFormed) {
-                            groupOwner.emit(event.p2pInfo.isGroupOwner)
-                            groupOwnerAddress.emit(
-                                event.p2pInfo.groupOwnerAddress
-                                    .toString()
-                                    .replace("/","")
+                            eventChannel.send(
+                                CreateGroupEvent.GroupConnected(
+                                    isGroupOwner = event.p2pInfo.isGroupOwner,
+                                    groupOwnerAddress =   event.p2pInfo.groupOwnerAddress
+                                        .toString()
+                                        .replace("/","")
+                                )
                             )
                         }
                     }
@@ -111,8 +107,6 @@ data class CreateGroupState(
     val networkName: String = "",
     val passcodeError: PasscodeError? = null,
     val passcode: String = "",
-    val groupOwnerAddress: String? = null,
-    val groupOwner: Boolean? = null,
 )
 
 sealed class PasscodeError(
@@ -124,6 +118,8 @@ sealed class PasscodeError(
 }
 
 sealed class CreateGroupEvent {
+
+    data class GroupConnected(val isGroupOwner: Boolean, val groupOwnerAddress: String): CreateGroupEvent()
 
     data class ShowToast(val message: String): CreateGroupEvent()
 

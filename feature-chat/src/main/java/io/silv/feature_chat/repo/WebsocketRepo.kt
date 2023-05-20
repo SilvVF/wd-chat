@@ -44,8 +44,12 @@ class WebsocketRepo (
                 var clientJob: Job? = null
                 for (i in 0..5) {
                     delay(1500)
-                    runCatching { clientJob = wsClient.start() }
-                    break
+                    val res = runCatching {
+                        clientJob = wsClient.start()
+                    }.getOrNull()
+                    if (res != null) {
+                        break
+                    }
                 }
                 closeActions.add { clientJob?.cancel() }
             }
