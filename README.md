@@ -35,6 +35,7 @@ Some of the common dependencies are shared between the modules using a TOML file
 A gradle task is also defenied to generate a new dependency graph and turn the dot file into a png that can be displayed. 
 
 ## App Images 
+<img src="https://github.com/SilvVF/wd-chat/assets/98186105/c65b5dd5-f982-4acf-9096-6c8ef3a2e416" width="50" height="50">
 ![Screenshot_20230519-210703 (1)](https://github.com/SilvVF/wd-chat/assets/98186105/c65b5dd5-f982-4acf-9096-6c8ef3a2e416)
 ![Screenshot_20230519-210633 (4)](https://github.com/SilvVF/wd-chat/assets/98186105/eef78537-7937-4d48-8b66-2ed906991017)
 ![Screenshot_20230519-210727 (1)](https://github.com/SilvVF/wd-chat/assets/98186105/5a435827-3614-4661-9f2a-bf9a086db0f7)
