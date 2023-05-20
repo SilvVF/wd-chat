@@ -20,7 +20,7 @@
 - [Coroutines + Flow](https://kotlinlang.org/docs/coroutines-overview.html)
 - [Jetpack Compose](https://developer.android.com/jetpack/compose)
 - [Compose Destinations](https://composedestinations.rafaelcosta.xyz/)
-[Arrow]("https://arrow-kt.io/")
+- [Arrow](https://arrow-kt.io/)
 
 
 ## Project Architecture
