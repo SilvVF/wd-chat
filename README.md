@@ -45,3 +45,5 @@ A gradle task is also defenied to generate a new dependency graph and turn the d
 <img src="https://github.com/SilvVF/wd-chat/assets/98186105/eef78537-7937-4d48-8b66-2ed906991017" width=300>
 
 <img src="https://github.com/SilvVF/wd-chat/assets/98186105/5a435827-3614-4661-9f2a-bf9a086db0f7" width=300>
+
+[https://play.google.com/store/apps/details?id=io.silv.wifidirectchat](https://play.google.com/store/apps/details?id=io.silv.wifidirectchat)
